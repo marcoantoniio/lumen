@@ -1,5 +1,5 @@
-// Ariel — shell Quickshell para CachyOS (Umbriel opcional)
-// Rode com: qs -c ariel
+// Lumen — shell Quickshell para CachyOS (Umbriel opcional)
+// Rode com: qs -c lumen
 //
 // Este arquivo é o ponto de entrada. Ele cria uma barra por monitor e
 // força a inicialização dos singletons de serviço.

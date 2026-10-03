@@ -1,7 +1,7 @@
 pragma Singleton
 
 // Clima atual via wttr.in (geolocalização por IP), atualizado a cada 10 min.
-// IPC: qs -c ariel ipc call weather refresh
+// IPC: qs -c lumen ipc call weather refresh
 
 import Quickshell
 import Quickshell.Io
@@ -123,7 +123,7 @@ Singleton {
                     root.hourly = list.slice(0, 2);
                     root.available = true;
                 } catch (e) {
-                    console.warn("[ariel] weather: falha ao ler", e);
+                    console.warn("[lumen] weather: falha ao ler", e);
                 }
             }
         }

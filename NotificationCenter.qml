@@ -3,7 +3,7 @@
 // - Abas coloridas por categoria (mesmas cores dos botões da barra).
 // - Filtra a lista pela categoria ativa.
 // Abre/fecha via clique no sino ou:
-//   qs -c ariel ipc call notifications toggle
+//   qs -c lumen ipc call notifications toggle
 
 import Quickshell
 import QtQuick
