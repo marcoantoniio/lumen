@@ -1,6 +1,5 @@
 // Botão circular de ação (usado na barra): só a cor, sem ícone nem anel.
-// O selecionado ganha um brilho (gradiente radial suave).
-// Tamanho enxuto, estilo ilha da Apple.
+// O normal tem um brilho (halo) em volta; o selecionado fica apagado e sem halo.
 
 import QtQuick
 import QtQuick.Shapes
@@ -13,15 +12,15 @@ Item {
 
     signal activated()
 
-    implicitWidth: 14
-    implicitHeight: 14
+    implicitWidth: 10
+    implicitHeight: 10
 
-    // Brilho quando selecionado
+    // Brilho em volta (halo) — some quando o botão está selecionado/apagado
     Shape {
         anchors.centerIn: parent
-        width: 22
-        height: 22
-        opacity: root.selected ? 1 : 0
+        width: 20
+        height: 20
+        opacity: (!root.selected && root.enabled) ? 1 : 0
         visible: opacity > 0.01
 
         Behavior on opacity {
@@ -32,19 +31,19 @@ Item {
             strokeColor: "transparent"
 
             fillGradient: RadialGradient {
-                centerX: 11
-                centerY: 11
-                centerRadius: 11
-                focalX: 11
-                focalY: 11
+                centerX: 10
+                centerY: 10
+                centerRadius: 10
+                focalX: 10
+                focalY: 10
 
                 GradientStop {
                     position: 0.0
-                    color: Qt.rgba(root.dotColor.r, root.dotColor.g, root.dotColor.b, 0.8)
+                    color: Qt.rgba(root.dotColor.r, root.dotColor.g, root.dotColor.b, 0.75)
                 }
                 GradientStop {
-                    position: 0.55
-                    color: Qt.rgba(root.dotColor.r, root.dotColor.g, root.dotColor.b, 0.45)
+                    position: 0.5
+                    color: Qt.rgba(root.dotColor.r, root.dotColor.g, root.dotColor.b, 0.35)
                 }
                 GradientStop {
                     position: 1.0
@@ -53,10 +52,10 @@ Item {
             }
 
             PathAngleArc {
-                centerX: 11
-                centerY: 11
-                radiusX: 11
-                radiusY: 11
+                centerX: 10
+                centerY: 10
+                radiusX: 10
+                radiusY: 10
                 startAngle: 0
                 sweepAngle: 360
             }
@@ -68,12 +67,12 @@ Item {
         id: circle
 
         anchors.centerIn: parent
-        width: 14
-        height: 14
-        radius: 7
+        width: 10
+        height: 10
+        radius: 5
         color: root.dotColor
-        opacity: root.enabled ? 1 : 0.4
-        scale: circleArea.containsMouse ? 1.15 : 1
+        opacity: root.enabled ? (root.selected ? 0.25 : 1) : 0.4
+        scale: circleArea.containsMouse ? 1.2 : 1
 
         Behavior on scale {
             NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
@@ -86,7 +85,7 @@ Item {
     MouseArea {
         id: circleArea
         anchors.fill: parent
-        anchors.margins: -2
+        anchors.margins: -3
         enabled: root.enabled
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor

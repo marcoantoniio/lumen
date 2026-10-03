@@ -10,7 +10,7 @@ import QtQuick
 Row {
     id: root
 
-    spacing: 5
+    spacing: 10
 
     // ---- notificações ----
     CategoryCircle {
