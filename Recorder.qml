@@ -62,7 +62,7 @@ Singleton {
             "-c", "mp4",            // container
             "-k", "h264",           // codec compatível (NVENC)
             "-f", "60",             // 60 fps
-            "-a", "default_output", // áudio do sistema (PipeWire)
+            "-a", "default_output|default_input", // áudio do sistema + microfone
             "-ac", "aac",           // áudio compatível com mp4
             "-ipc", root.socketPath,
             "-o", root.lastFile

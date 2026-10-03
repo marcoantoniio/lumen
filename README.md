@@ -84,7 +84,7 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
 | `kitty` | botão do terminal no rodapé |
 | Klipper (KDE) | histórico do clipboard |
 | `gammastep` | botão Night Light |
-| `gpu-screen-recorder` | gravação de tela (botão Gravador; usa NVENC/GPU) |
+| `gpu-screen-recorder` | gravação de tela (botão Gravador; usa NVENC/GPU e áudio do sistema + microfone) |
 
 ---
 
