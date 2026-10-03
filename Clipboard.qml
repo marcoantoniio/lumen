@@ -5,7 +5,7 @@ pragma Singleton
 // - copyItem() devolve um item para o clipboard.
 // - Em compositores sem Klipper, `available` fica false e a UI avisa.
 //
-// IPC: qs -c umbra ipc call clipboard refresh|clear|copy <texto>
+// IPC: qs -c ariel ipc call clipboard refresh|clear|copy <texto>
 
 import Quickshell
 import Quickshell.Io

@@ -7,7 +7,7 @@ pragma Singleton
 // - Cada aplicativo vira uma "categoria" com cor estável (mesma cor na barra
 //   e nas abas do painel), como no shell original.
 // - Controlável por IPC:
-//   qs -c umbra ipc call notifications toggle|open|openCategory|close|clearAll|getCount|toggleDnd|getDnd
+//   qs -c ariel ipc call notifications toggle|open|openCategory|close|clearAll|getCount|toggleDnd|getDnd
 
 import Quickshell
 import Quickshell.Io

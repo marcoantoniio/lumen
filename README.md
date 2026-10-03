@@ -1,4 +1,4 @@
-# Umbra
+# Ariel
 
 **Um shell desktop para Wayland, feito com [Quickshell](https://quickshell.org/) (QML).**
 
@@ -87,16 +87,16 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
 ## 🚀 Instalação
 
 ```bash
-git clone https://github.com/marcoantoniio/umbra-shell ~/.config/quickshell/umbra
-qs -c umbra -n -d        # inicia em segundo plano
+git clone https://github.com/marcoantoniio/ariel ~/.config/quickshell/ariel
+qs -c ariel -n -d        # inicia em segundo plano
 ```
 
 Parar / inspecionar:
 
 ```bash
-qs -c umbra kill         # encerra
-qs -c umbra list         # mostra instâncias rodando
-qs -c umbra log          # imprime os logs
+qs -c ariel kill         # encerra
+qs -c ariel list         # mostra instâncias rodando
+qs -c ariel log          # imprime os logs
 ```
 
 ### Iniciar junto com a sessão (opcional)
@@ -105,19 +105,19 @@ Via systemd de usuário:
 
 ```bash
 mkdir -p ~/.config/systemd/user
-cat > ~/.config/systemd/user/umbra.service <<'EOF'
+cat > ~/.config/systemd/user/ariel.service <<'EOF'
 [Unit]
-Description=Umbra (Quickshell shell)
+Description=Ariel (Quickshell shell)
 PartOf=graphical-session.target
 
 [Service]
-ExecStart=/usr/bin/qs -c umbra -n
+ExecStart=/usr/bin/qs -c ariel -n
 Restart=on-failure
 
 [Install]
 WantedBy=graphical-session.target
 EOF
-systemctl --user enable --now umbra.service
+systemctl --user enable --now ariel.service
 ```
 
 Ou copie um `.desktop` para `~/.config/autostart/` (e para
@@ -126,8 +126,8 @@ Ou copie um `.desktop` para `~/.config/autostart/` (e para
 ```ini
 [Desktop Entry]
 Type=Application
-Name=Umbra Shell
-Exec=qs -c umbra -n -d
+Name=Ariel Shell
+Exec=qs -c ariel -n -d
 Icon=video-display
 Terminal=false
 Categories=Utility;
@@ -147,16 +147,16 @@ Categories=Utility;
 ## ⌨️ IPC
 
 ```bash
-qs -c umbra ipc show                          # lista tudo que existe
+qs -c ariel ipc show                          # lista tudo que existe
 
-qs -c umbra ipc call notifications toggle     # painel de notificações
-qs -c umbra ipc call notifications toggleDnd  # não perturbe
-qs -c umbra ipc call controlcenter toggle     # control center
-qs -c umbra ipc call controlcenter setTab 1   # 0=CC, 1=Dashboard, 2=Clipboard
-qs -c umbra ipc call workspaces switchToIndex 1
-qs -c umbra ipc call brightness set 40        # brilho (DDC/CI)
-qs -c umbra ipc call weather refresh
-qs -c umbra ipc call clipboard copy "texto"
+qs -c ariel ipc call notifications toggle     # painel de notificações
+qs -c ariel ipc call notifications toggleDnd  # não perturbe
+qs -c ariel ipc call controlcenter toggle     # control center
+qs -c ariel ipc call controlcenter setTab 1   # 0=CC, 1=Dashboard, 2=Clipboard
+qs -c ariel ipc call workspaces switchToIndex 1
+qs -c ariel ipc call brightness set 40        # brilho (DDC/CI)
+qs -c ariel ipc call weather refresh
+qs -c ariel ipc call clipboard copy "texto"
 ```
 
 ---

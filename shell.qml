@@ -1,5 +1,5 @@
-// Umbra — shell Quickshell para CachyOS (Umbriel opcional)
-// Rode com: qs -c umbra
+// Ariel — shell Quickshell para CachyOS (Umbriel opcional)
+// Rode com: qs -c ariel
 //
 // Este arquivo é o ponto de entrada. Ele cria uma barra por monitor e
 // força a inicialização dos singletons de serviço.
