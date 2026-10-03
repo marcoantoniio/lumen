@@ -1,17 +1,19 @@
 // Ícones da bandeja do sistema (StatusNotifierItem).
-// Esquerdo: ativar. Meio: ativação secundária. Direito: menu do item.
+// Esquerdo: ativar (ou abrir o menu, se o item só tiver menu). Meio: ativação
+// secundária. Direito: menu do item (DBusMenu) ancorado ao ícone.
 
-import QtQuick
+import Quickshell
 import Quickshell.Services.SystemTray
+import QtQuick
 
 Row {
     id: root
 
-    property var panelWindow: null
-
     spacing: 6
 
     Repeater {
+        id: items
+
         model: SystemTray.items
 
         delegate: Item {
@@ -30,18 +32,30 @@ Row {
                 smooth: true
             }
 
+            // Menu do item (DBusMenu), ancorado ao ícone
+            QsMenuAnchor {
+                id: menuAnchor
+
+                menu: entry.modelData.menu
+                anchor.item: entry
+            }
+
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: (mouse) => {
-                    if (mouse.button === Qt.LeftButton)
-                        entry.modelData.activate();
-                    else if (mouse.button === Qt.MiddleButton)
+                    if (mouse.button === Qt.LeftButton) {
+                        if (entry.modelData.onlyMenu && entry.modelData.hasMenu)
+                            menuAnchor.open();
+                        else
+                            entry.modelData.activate();
+                    } else if (mouse.button === Qt.MiddleButton) {
                         entry.modelData.secondaryActivate();
-                    else if (mouse.button === Qt.RightButton && entry.modelData.hasMenu)
-                        entry.modelData.display(root.panelWindow, 0, root.height);
+                    } else if (mouse.button === Qt.RightButton && entry.modelData.hasMenu) {
+                        menuAnchor.open();
+                    }
                 }
             }
         }

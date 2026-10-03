@@ -307,9 +307,7 @@ PopupWindow {
 
                 Item { Layout.fillWidth: true }
 
-                Tray {
-                    panelWindow: center
-                }
+                Tray {}
             }
         }
     }

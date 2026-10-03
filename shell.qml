@@ -1,3 +1,4 @@
+//@ pragma UseQApplication
 // Lumen — shell Quickshell para CachyOS (Umbriel opcional)
 // Rode com: qs -c lumen
 //
