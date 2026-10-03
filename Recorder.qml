@@ -2,7 +2,7 @@ pragma Singleton
 
 // Gravador de tela (gpu-screen-recorder).
 //
-// - start(): grava o monitor DP-1 em ~/Videos.
+// - start(): grava todas as telas (HDMI-A-1 + DP-1 empilhados) em ~/Videos.
 // - stop(): finaliza o arquivo; pause()/resume() pausam de verdade
 //   (comandos nativos via socket IPC do gpu-screen-recorder).
 // - Enquanto grava, a ilha mostra o indicador REC (RecordingIndicator).
@@ -58,7 +58,7 @@ Singleton {
 
         proc.command = [
             root.bin,
-            "-w", "DP-1",            // monitor fixo (DP-1)
+            "-w", "HDMI-A-1|DP-1;y=1080", // todas as telas (empilhadas na vertical)
             "-c", "mp4",            // container
             "-k", "h264",           // codec compatível (NVENC)
             "-f", "60",             // 60 fps
