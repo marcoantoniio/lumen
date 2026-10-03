@@ -21,14 +21,14 @@ Row {
 
             required property var modelData
 
-            implicitWidth: 18
-            implicitHeight: 18
+            implicitWidth: 20
+            implicitHeight: 20
             visible: modelData.icon !== ""
 
             Image {
                 anchors.fill: parent
                 source: entry.modelData.icon
-                sourceSize: Qt.size(16, 16)
+                sourceSize: Qt.size(20, 20)
                 smooth: true
             }
 
