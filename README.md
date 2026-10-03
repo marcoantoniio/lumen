@@ -84,7 +84,7 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
 | `kitty` | botão do terminal no rodapé |
 | Klipper (KDE) | histórico do clipboard |
 | `gammastep` | botão Night Light |
-| `gpu-screen-recorder` | gravação de tela (botão Gravador; usa NVENC/GPU e áudio do sistema + microfone) |
+| `gpu-screen-recorder` | gravação do monitor DP-1 (botão Gravador; usa NVENC/GPU e áudio do sistema + microfone) |
 
 ---
 
@@ -164,7 +164,7 @@ qs -c lumen ipc call workspaces switchToIndex 1
 qs -c lumen ipc call brightness set 40        # brilho (DDC/CI)
 qs -c lumen ipc call weather refresh
 qs -c lumen ipc call clipboard copy "texto"
-qs -c lumen ipc call recorder start           # grava a tela inteira (~/Videos)
+qs -c lumen ipc call recorder start           # grava o DP-1 (~/Videos)
 qs -c lumen ipc call recorder pause           # pausa/retoma a gravação
 qs -c lumen ipc call recorder stop            # para e salva o arquivo
 ```

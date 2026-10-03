@@ -2,7 +2,7 @@ pragma Singleton
 
 // Gravador de tela (gpu-screen-recorder).
 //
-// - start(): grava a tela inteira (via portal do KDE) em ~/Videos.
+// - start(): grava o monitor DP-1 em ~/Videos.
 // - stop(): finaliza o arquivo; pause()/resume() pausam de verdade
 //   (comandos nativos via socket IPC do gpu-screen-recorder).
 // - Enquanto grava, a ilha mostra o indicador REC (RecordingIndicator).
@@ -58,7 +58,7 @@ Singleton {
 
         proc.command = [
             root.bin,
-            "-w", "screen",         // tela inteira (portal no Wayland)
+            "-w", "DP-1",            // monitor fixo (DP-1)
             "-c", "mp4",            // container
             "-k", "h264",           // codec compatível (NVENC)
             "-f", "60",             // 60 fps
