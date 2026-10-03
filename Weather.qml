@@ -20,6 +20,10 @@ Singleton {
     property var hourly: []
     property string area: ""
 
+    // Coordenadas da sua cidade no wttr.in (padrão: Brasília).
+    // Troque para a sua: https://wttr.in/<lat>,<lon>
+    readonly property string location: "-15.7939,-47.8828"
+
     function refresh() {
         if (!fetch.running)
             fetch.running = true;
@@ -65,7 +69,7 @@ Singleton {
     Process {
         id: fetch
 
-        command: ["curl", "-s", "--max-time", "12", "https://wttr.in/-15.7939,-47.8828?format=j1"]
+        command: ["curl", "-s", "--max-time", "12", "https://wttr.in/" + root.location + "?format=j1"]
 
         stdout: StdioCollector {
             onStreamFinished: {

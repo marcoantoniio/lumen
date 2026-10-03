@@ -1,5 +1,4 @@
-// Card "Sistema" do Dashboard (estilo da referência: linhas com rótulo, valor
-// e uma barra de progresso).
+// Card "Sistema" do Dashboard (linhas com rótulo, valor e barra de progresso).
 
 import QtQuick
 import QtQuick.Layouts

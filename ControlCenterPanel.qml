@@ -1,4 +1,4 @@
-// Control Center (aberto pela bolinha do meio da ilha), no layout da referência:
+// Control Center (aberto pela bolinha do meio da ilha), em 3 colunas:
 // - Abas: Control Center | Dashboard | Clipboard & Notes
 // - Control Center em duas colunas:
 //   - Esquerda: "Quick Settings" (rede, DND, night light, caffeine, bluetooth,
@@ -56,6 +56,7 @@ PopupWindow {
     property real prevCpuTotal: -1
     property real prevCpuIdle: -1
 
+    // Nomes amigáveis dos discos — ajuste para os seus pontos de montagem
     function diskName(mount) {
         if (mount === "/")
             return "root";
@@ -618,7 +619,7 @@ PopupWindow {
             }
 
                 // ================= PAGE 1: DASHBOARD =================
-                // Saudação + layout da referência: Calendário | Clima | Sistema
+                // Saudação + Calendário | Clima | Sistema
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
