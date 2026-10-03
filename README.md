@@ -20,6 +20,8 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
   da pílula (`mask`/`Region`).
 - **Idle mostra só o relógio**; ao passar o mouse, a pílula **expande com
   animação** (largura + slide + fade) e revela os elementos laterais.
+- **Gravando**: a ilha vira o indicador **REC** — bolinha vermelha pulsando,
+  tempo de gravação e botões de pausar/continuar e parar.
 - **A ilha se adapta aos painéis**: quando um painel abre, ela cresce até a
   largura dele e se funde ao painel (sem vão nem linha divisória); ao fechar,
   volta ao normal — tudo animado.
@@ -37,7 +39,8 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
 - Abas: **Control Center | Dashboard | Clipboard & Notes** (altura fixa, sem
   "pular" ao trocar de aba).
 - **Control Center**: Quick Settings (Rede, Não Perturbe, Night Light,
-  Caffeine, Bluetooth, Gravador) + Sessão (Bloquear, Sair, Reiniciar,
+  Caffeine, Bluetooth, **Gravador** — grava a tela e acende durante a gravação)
+  + Sessão (Bloquear, Sair, Reiniciar,
   Desligar); **Levels** com sliders de Saída/Microfone/Brilho, mute no ícone e
   **seletor de dispositivos de áudio** na setinha; linha de mídia (MPRIS).
 - **Dashboard**: saudação ("Bom dia/Boa tarde/Boa noite, Nome"), **calendário**
@@ -81,6 +84,7 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
 | `kitty` | botão do terminal no rodapé |
 | Klipper (KDE) | histórico do clipboard |
 | `gammastep` | botão Night Light |
+| `gpu-screen-recorder` | gravação de tela (botão Gravador; usa NVENC/GPU) |
 
 ---
 
@@ -160,6 +164,9 @@ qs -c lumen ipc call workspaces switchToIndex 1
 qs -c lumen ipc call brightness set 40        # brilho (DDC/CI)
 qs -c lumen ipc call weather refresh
 qs -c lumen ipc call clipboard copy "texto"
+qs -c lumen ipc call recorder start           # grava a tela inteira (~/Videos)
+qs -c lumen ipc call recorder pause           # pausa/retoma a gravação
+qs -c lumen ipc call recorder stop            # para e salva o arquivo
 ```
 
 ---

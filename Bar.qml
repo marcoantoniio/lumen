@@ -85,7 +85,12 @@ PanelWindow {
             }
         }
 
-        width: Math.max(clockItem.implicitWidth + Theme.pillPadding * 2
+        // Largura do item central (relógio ou indicador de gravação)
+        readonly property real centerWidth: Recorder.recording
+            ? recIndicator.implicitWidth
+            : clockItem.implicitWidth
+
+        width: Math.max(centerWidth + Theme.pillPadding * 2
                         + reveal * (sideWidth * 2 + Theme.spacing * 2),
                         animatedPanelWidth)
 
@@ -140,10 +145,17 @@ PanelWindow {
             }
         }
 
-        // ---- centro: relógio (sempre visível, sempre centralizado) ----
+        // ---- centro: relógio (ou indicador de gravação) ----
         Clock {
             id: clockItem
             anchors.centerIn: parent
+            visible: !Recorder.recording
+        }
+
+        RecordingIndicator {
+            id: recIndicator
+            anchors.centerIn: parent
+            visible: Recorder.recording
         }
 
         // ---- direita: botões de categoria ----

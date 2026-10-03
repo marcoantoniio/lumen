@@ -23,6 +23,7 @@ Singleton {
     readonly property color accentGreen: "#a6e3a1"
     readonly property color accentPurple: "#cba6f7"
     readonly property color urgent: "#e8836f"
+    readonly property color recording: "#ff4b4b"
     readonly property color border: "#332f2c"
 
     // Métricas

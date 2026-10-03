@@ -428,7 +428,8 @@ PopupWindow {
                             Layout.fillWidth: true
                             glyph: "\u{F0100}" // nf-md-video
                             label: "Gravador"
-                            onActivated: Quickshell.execDetached(["spectacle", "-R", "s"])
+                            active: Recorder.recording
+                            onActivated: Recorder.toggle()
                         }
                     }
 
