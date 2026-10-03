@@ -108,11 +108,14 @@ mkdir -p ~/.config/systemd/user
 cat > ~/.config/systemd/user/lumen.service <<'EOF'
 [Unit]
 Description=Lumen (Quickshell shell)
+After=graphical-session.target
 PartOf=graphical-session.target
 
 [Service]
+Type=simple
 ExecStart=/usr/bin/qs -c lumen -n
 Restart=on-failure
+RestartSec=2s
 
 [Install]
 WantedBy=graphical-session.target
