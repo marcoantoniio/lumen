@@ -16,9 +16,6 @@ PopupWindow {
 
     readonly property int panelWidth: Theme.musicPanelWidth
 
-    // Seção aberta: -1 nenhuma, 0 saída, 1 mixer, 2 letras
-    property int section: -1
-
     readonly property var sinks: {
         const out = [];
         const nodes = Pipewire.nodes.values;
@@ -48,14 +45,6 @@ PopupWindow {
         // Qt.callLater evita binding loop no visible (bug de flicker)
         if (!visible && Music.panelOpen)
             Qt.callLater(() => Music.panelOpen = false);
-    }
-
-    HoverHandler {
-        onHoveredChanged: {
-            Music.panelHovered = hovered;
-            if (!hovered)
-                closeTimer.restart();
-        }
     }
 
     Timer {
@@ -103,9 +92,9 @@ PopupWindow {
 
         signal activated()
 
-        implicitWidth: 38
-        implicitHeight: 38
-        radius: 12
+        implicitWidth: 30
+        implicitHeight: 30
+        radius: 9
         color: sectionButton.active
                ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22)
                : (sectionArea.containsMouse ? Theme.surfaceHover : "transparent")
@@ -125,7 +114,7 @@ PopupWindow {
             text: sectionButton.glyph
             color: sectionButton.active ? Theme.accent : Theme.foreground
             font.family: Theme.iconFont
-            font.pixelSize: 17
+            font.pixelSize: 14
         }
 
         MouseArea {
@@ -174,6 +163,15 @@ PopupWindow {
 
     Rectangle {
         id: frame
+
+        // Hover do painel (precisa estar num Item; no PopupWindow não funciona)
+        HoverHandler {
+            onHoveredChanged: {
+                Music.panelHovered = hovered;
+                if (!hovered)
+                    closeTimer.restart();
+            }
+        }
 
         width: parent.width
         height: column.height + 24
@@ -355,17 +353,40 @@ PopupWindow {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 46
-                spacing: 10
+                spacing: 6
 
-                // mixer à esquerda do player
+                // mixer: ícone vira alto-falante e o slider aparece ao lado
                 SectionButton {
                     Layout.alignment: Qt.AlignVCenter
-                    glyph: "\u{F066A}" // nf-md-tune_vertical (mixer)
-                    active: panel.section === 1
-                    onActivated: panel.section = panel.section === 1 ? -1 : 1
+                    glyph: Music.section === 1 ? "\u{F057E}" : "\u{F066A}" // volume-high / tune (mixer)
+                    active: Music.section === 1
+                    onActivated: Music.section = Music.section === 1 ? -1 : 1
                 }
 
-                Item { Layout.fillWidth: true }
+                LevelSlider {
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 140
+                    visible: Music.section === 1
+                    value: Music.player && Music.player.volumeSupported ? Music.player.volume : 0
+                    onMoved: (v) => {
+                        if (Music.player && Music.player.volumeSupported)
+                            Music.player.volume = v;
+                    }
+                }
+
+                Text {
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredWidth: 26
+                    visible: Music.section === 1
+                    text: Music.player && Music.player.volumeSupported
+                          ? Math.round(Music.player.volume * 100) + "%" : ""
+                    color: Theme.foregroundDim
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 10
+                }
+
+                Item { Layout.fillWidth: true; visible: Music.section !== 1 }
 
                 ControlButton {
                     Layout.alignment: Qt.AlignVCenter
@@ -395,21 +416,21 @@ PopupWindow {
                 SectionButton {
                     Layout.alignment: Qt.AlignVCenter
                     glyph: "\u{F04C3}" // nf-md-speaker (saída)
-                    active: panel.section === 0
-                    onActivated: panel.section = panel.section === 0 ? -1 : 0
+                    active: Music.section === 0
+                    onActivated: Music.section = Music.section === 0 ? -1 : 0
                 }
 
                 SectionButton {
                     Layout.alignment: Qt.AlignVCenter
                     glyph: "\u{F021A}" // nf-md-text_box (letras)
-                    active: panel.section === 2
-                    onActivated: panel.section = panel.section === 2 ? -1 : 2
+                    active: Music.section === 2
+                    onActivated: Music.section = Music.section === 2 ? -1 : 2
                 }
             }
 
             // ---- saída de áudio ----
             ColumnLayout {
-                visible: panel.section === 0
+                visible: Music.section === 0
 
                 Layout.fillWidth: true
                 Layout.preferredHeight: 114
@@ -471,54 +492,12 @@ PopupWindow {
                 }
             }
 
-            // ---- mixer (volume interno do app, via MPRIS) ----
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 104
-                spacing: 4
-                visible: panel.section === 1 && Music.active
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.topMargin: 2
-                    spacing: 8
-
-                    Text {
-                        Layout.preferredWidth: 110
-                        text: Music.player ? Music.player.identity : ""
-                        color: Theme.foreground
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 10
-                        elide: Text.ElideRight
-                    }
-
-                    LevelSlider {
-                        Layout.fillWidth: true
-                        value: Music.player && Music.player.volumeSupported ? Music.player.volume : 0
-                        onMoved: (v) => {
-                            if (Music.player && Music.player.volumeSupported)
-                                Music.player.volume = v;
-                        }
-                    }
-
-                    Text {
-                        Layout.preferredWidth: 30
-                        horizontalAlignment: Text.AlignRight
-                        text: Music.player && Music.player.volumeSupported
-                              ? Math.round(Music.player.volume * 100) + "%" : ""
-                        color: Theme.foregroundDim
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 10
-                    }
-                }
-            }
-
             // ---- letras ----
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 127
                 spacing: 4
-                visible: panel.section === 2
+                visible: Music.section === 2
 
                 RowLayout {
                     Layout.fillWidth: true

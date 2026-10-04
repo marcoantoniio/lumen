@@ -68,6 +68,8 @@ Singleton {
     // ---------- painel (abre no hover da ilha) ----------
     property bool panelOpen: false
     property bool panelHovered: false
+    // Seção aberta: -1 nenhuma, 0 saída, 1 mixer, 2 letras
+    property int section: -1
 
     // ---------- capa (baixada localmente p/ o ColorQuantizer) ----------
     property string artFile: ""
@@ -276,5 +278,6 @@ Singleton {
             return root.artist + " - " + root.title + (root.playing ? " (tocando)" : " (pausado)");
         }
         function getLyricsStatus(): string { return root.lyricsStatus; }
+        function section(n: int): void { root.section = n; }
     }
 }
