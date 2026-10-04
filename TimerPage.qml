@@ -1,6 +1,6 @@
 // Aba Timer do Control Center: Pomodoro (tempos ajustáveis), Cronômetro e
 // Timer (contagem regressiva) — sub-abas.
-// Layout compacto: ajustes e controles ao lado do tempo.
+// Layout: tempo à esquerda e botões quadradinhos à direita.
 
 import QtQuick
 import QtQuick.Layouts
@@ -12,8 +12,8 @@ ColumnLayout {
 
     spacing: 8
 
-    // Botão redondo dos controles principais
-    component TimerButton: Rectangle {
+    // Botão quadradinho com ícone
+    component SquareButton: Rectangle {
         id: button
 
         property string glyph: ""
@@ -21,16 +21,23 @@ ColumnLayout {
 
         signal activated()
 
-        implicitWidth: 38
-        implicitHeight: 38
-        radius: 19
+        implicitWidth: 40
+        implicitHeight: 40
+        radius: 12
         color: button.primary
-               ? (buttonArea.containsMouse ? Qt.lighter(Theme.accent, 1.1) : Theme.accent)
+               ? (buttonArea.containsMouse ? Qt.lighter(Theme.accent, 1.08) : Theme.accent)
                : (buttonArea.containsMouse
-                  ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2)
+                  ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22)
                   : Theme.surfaceHover)
+        border.width: 1
+        border.color: button.primary
+                      ? "transparent"
+                      : (buttonArea.containsMouse ? Theme.accent : "transparent")
 
         Behavior on color {
+            ColorAnimation { duration: 120 }
+        }
+        Behavior on border.color {
             ColorAnimation { duration: 120 }
         }
 
@@ -39,7 +46,7 @@ ColumnLayout {
             text: button.glyph
             color: button.primary ? Theme.accentInk : Theme.foreground
             font.family: Theme.iconFont
-            font.pixelSize: 16
+            font.pixelSize: 17
         }
 
         MouseArea {
@@ -49,43 +56,6 @@ ColumnLayout {
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
             onClicked: button.activated()
-        }
-    }
-
-    // Botão pequeno de ajuste (− / +)
-    component StepButton: Rectangle {
-        id: step
-
-        property string glyph: ""
-
-        signal activated()
-
-        implicitWidth: 30
-        implicitHeight: 30
-        radius: 15
-        color: stepArea.containsMouse
-               ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2)
-               : Theme.surfaceHover
-
-        Behavior on color {
-            ColorAnimation { duration: 120 }
-        }
-
-        Text {
-            anchors.centerIn: parent
-            text: step.glyph
-            color: stepArea.containsMouse ? Theme.accent : Theme.foregroundDim
-            font.family: Theme.iconFont
-            font.pixelSize: 14
-        }
-
-        MouseArea {
-            id: stepArea
-
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: step.activated()
         }
     }
 
@@ -120,23 +90,17 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true
         visible: root.mode === 0
-        spacing: 10
+        spacing: 12
 
         Item { Layout.fillHeight: true }
 
-        // tempo + ajuste da fase + controles (uma linha)
+        // tempo à esquerda, botões à direita
         RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 10
-
-            StepButton {
-                glyph: "\u{F0374}" // nf-md-minus
-                onActivated: TimerService.pomoAdjust(-5)
-            }
+            Layout.fillWidth: true
+            spacing: 8
 
             Text {
-                Layout.preferredWidth: 128
-                horizontalAlignment: Text.AlignHCenter
+                Layout.leftMargin: 6
                 text: TimerService.format(TimerService.pomoRemaining)
                 color: Theme.foreground
                 font.family: Theme.fontFamily
@@ -144,25 +108,32 @@ ColumnLayout {
                 font.bold: true
             }
 
-            StepButton {
+            Item { Layout.fillWidth: true }
+
+            SquareButton {
+                glyph: "\u{F0374}" // nf-md-minus
+                onActivated: TimerService.pomoAdjust(-5)
+            }
+
+            SquareButton {
                 glyph: "\u{F0415}" // nf-md-plus
                 onActivated: TimerService.pomoAdjust(5)
             }
 
-            Item { Layout.preferredWidth: 4 }
+            Item { Layout.preferredWidth: 2 }
 
-            TimerButton {
+            SquareButton {
                 glyph: TimerService.pomoRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
                 primary: true
                 onActivated: TimerService.pomoToggle()
             }
 
-            TimerButton {
+            SquareButton {
                 glyph: "\u{F0709}" // nf-md-restart
                 onActivated: TimerService.pomoReset()
             }
 
-            TimerButton {
+            SquareButton {
                 glyph: "\u{F04AD}" // nf-md-skip_next (pular fase)
                 onActivated: TimerService.pomoSkip()
             }
@@ -170,8 +141,9 @@ ColumnLayout {
 
         // progresso
         Rectangle {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 300
+            Layout.fillWidth: true
+            Layout.leftMargin: 6
+            Layout.rightMargin: 6
             implicitHeight: 5
             radius: 2.5
             color: Theme.surfaceHover
@@ -245,12 +217,11 @@ ColumnLayout {
         Item { Layout.fillHeight: true }
 
         RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 10
+            Layout.fillWidth: true
+            spacing: 8
 
             Text {
-                Layout.preferredWidth: 150
-                horizontalAlignment: Text.AlignHCenter
+                Layout.leftMargin: 6
                 text: TimerService.format(TimerService.swElapsed)
                 color: Theme.foreground
                 font.family: Theme.fontFamily
@@ -258,20 +229,20 @@ ColumnLayout {
                 font.bold: true
             }
 
-            Item { Layout.preferredWidth: 4 }
+            Item { Layout.fillWidth: true }
 
-            TimerButton {
+            SquareButton {
                 glyph: TimerService.swRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
                 primary: true
                 onActivated: TimerService.swToggle()
             }
 
-            TimerButton {
+            SquareButton {
                 glyph: "\u{F023B}" // nf-md-flag (volta)
                 onActivated: TimerService.swLap()
             }
 
-            TimerButton {
+            SquareButton {
                 glyph: "\u{F0709}" // nf-md-restart
                 onActivated: TimerService.swReset()
             }
@@ -330,23 +301,16 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true
         visible: root.mode === 2
-        spacing: 10
+        spacing: 12
 
         Item { Layout.fillHeight: true }
 
-        // tempo + ajuste + controles (uma linha)
         RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 10
-
-            StepButton {
-                glyph: "\u{F0374}" // nf-md-minus (1 min)
-                onActivated: TimerService.timerAdjust(-1)
-            }
+            Layout.fillWidth: true
+            spacing: 8
 
             Text {
-                Layout.preferredWidth: 128
-                horizontalAlignment: Text.AlignHCenter
+                Layout.leftMargin: 6
                 text: TimerService.format(TimerService.timerRemaining)
                 color: Theme.foreground
                 font.family: Theme.fontFamily
@@ -354,20 +318,27 @@ ColumnLayout {
                 font.bold: true
             }
 
-            StepButton {
+            Item { Layout.fillWidth: true }
+
+            SquareButton {
+                glyph: "\u{F0374}" // nf-md-minus (1 min)
+                onActivated: TimerService.timerAdjust(-1)
+            }
+
+            SquareButton {
                 glyph: "\u{F0415}" // nf-md-plus (1 min)
                 onActivated: TimerService.timerAdjust(1)
             }
 
-            Item { Layout.preferredWidth: 4 }
+            Item { Layout.preferredWidth: 2 }
 
-            TimerButton {
+            SquareButton {
                 glyph: TimerService.timerRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
                 primary: true
                 onActivated: TimerService.timerToggle()
             }
 
-            TimerButton {
+            SquareButton {
                 glyph: "\u{F0709}" // nf-md-restart
                 onActivated: TimerService.timerReset()
             }
@@ -375,8 +346,9 @@ ColumnLayout {
 
         // progresso
         Rectangle {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 300
+            Layout.fillWidth: true
+            Layout.leftMargin: 6
+            Layout.rightMargin: 6
             implicitHeight: 5
             radius: 2.5
             color: Theme.surfaceHover
@@ -408,11 +380,13 @@ ColumnLayout {
 
                     anchors.verticalCenter: parent.verticalCenter
                     implicitWidth: presetLabel.implicitWidth + 16
-                    implicitHeight: 22
-                    radius: 11
+                    implicitHeight: 24
+                    radius: 8
                     color: current
                            ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2)
                            : Theme.surfaceHover
+                    border.width: 1
+                    border.color: current ? Theme.accent : "transparent"
 
                     Text {
                         id: presetLabel
