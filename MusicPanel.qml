@@ -45,7 +45,6 @@ PopupWindow {
     visible: Music.panelOpen && !ControlCenter.open && !Notifications.centerOpen
 
     onVisibleChanged: {
-        console.log("MP-DBG visible:", visible, "| panelOpen:", Music.panelOpen);
         // Qt.callLater evita binding loop no visible (bug de flicker)
         if (!visible && Music.panelOpen)
             Qt.callLater(() => Music.panelOpen = false);
@@ -472,94 +471,44 @@ PopupWindow {
                 }
             }
 
-            // ---- mixer (aplicativos) ----
+            // ---- mixer (volume interno do app, via MPRIS) ----
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 104
                 spacing: 4
-                visible: panel.section === 1 && Audio.streams.length > 0
+                visible: panel.section === 1 && Music.active
 
-                Text {
-                    text: "Mixer"
-                    color: Theme.foregroundDim
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 10
-                }
-
-                Flickable {
+                RowLayout {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Math.min(streamCol.implicitHeight, 84)
-                    contentHeight: streamCol.implicitHeight
-                    clip: true
-                    interactive: contentHeight > height
+                    Layout.topMargin: 2
+                    spacing: 8
 
-                    ColumnLayout {
-                        id: streamCol
+                    Text {
+                        Layout.preferredWidth: 110
+                        text: Music.player ? Music.player.identity : ""
+                        color: Theme.foreground
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
+                        elide: Text.ElideRight
+                    }
 
-                        width: parent.width
-                        spacing: 4
-
-                        Repeater {
-                            model: Audio.streams
-
-                            delegate: RowLayout {
-                                required property var modelData
-
-                                Layout.fillWidth: true
-                                spacing: 8
-
-                                Image {
-                                    Layout.preferredWidth: 16
-                                    Layout.preferredHeight: 16
-                                    source: Audio.streamIcon(modelData)
-                                    sourceSize: Qt.size(16, 16)
-                                    smooth: true
-                                    visible: source !== ""
-                                }
-
-                                Text {
-                                    Layout.preferredWidth: 86
-                                    text: Audio.streamName(modelData)
-                                    color: Theme.foreground
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 10
-                                    elide: Text.ElideRight
-                                }
-
-                                LevelSlider {
-                                    Layout.fillWidth: true
-                                    value: modelData.audio ? modelData.audio.volume : 0
-                                    muted: modelData.audio ? modelData.audio.muted : false
-                                    onMoved: (v) => {
-                                        if (modelData.audio)
-                                            modelData.audio.volume = v;
-                                    }
-                                }
-
-                                Text {
-                                    Layout.preferredWidth: 30
-                                    horizontalAlignment: Text.AlignRight
-                                    text: modelData.audio ? Math.round(modelData.audio.volume * 100) + "%" : ""
-                                    color: Theme.foregroundDim
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 10
-                                }
-
-                                Text {
-                                    text: modelData.audio && modelData.audio.muted ? "\u{F0581}" : "\u{F057E}"
-                                    color: modelData.audio && modelData.audio.muted ? Theme.foregroundDim : Theme.foreground
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: 13
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        anchors.margins: -4
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: if (modelData.audio) modelData.audio.muted = !modelData.audio.muted
-                                    }
-                                }
-                            }
+                    LevelSlider {
+                        Layout.fillWidth: true
+                        value: Music.player && Music.player.volumeSupported ? Music.player.volume : 0
+                        onMoved: (v) => {
+                            if (Music.player && Music.player.volumeSupported)
+                                Music.player.volume = v;
                         }
+                    }
+
+                    Text {
+                        Layout.preferredWidth: 30
+                        horizontalAlignment: Text.AlignRight
+                        text: Music.player && Music.player.volumeSupported
+                              ? Math.round(Music.player.volume * 100) + "%" : ""
+                        color: Theme.foregroundDim
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
                     }
                 }
             }

@@ -15,13 +15,20 @@ Singleton {
 
     function toggle(): void {
         root.open = !root.open;
+        if (root.open)
+            ControlCenter.open = false;
+    }
+
+    function open(): void {
+        root.open = true;
+        ControlCenter.open = false;
     }
 
     IpcHandler {
         target: "camera"
 
         function toggle(): void { root.toggle(); }
-        function open(): void { root.open = true; }
+        function open(): void { root.open(); }
         function close(): void { root.open = false; }
     }
 }

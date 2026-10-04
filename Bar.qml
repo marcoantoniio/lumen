@@ -50,8 +50,6 @@ PanelWindow {
         id: musicOpenTimer
         interval: 350
         onTriggered: {
-            console.log("BAR-DBG timer | playing:", Music.playing, "| cc:", ControlCenter.open,
-                        "| nc:", Notifications.centerOpen, "| cam:", Webcam.open);
             if (Music.playing && !ControlCenter.open && !Notifications.centerOpen)
                 Music.panelOpen = true;
         }
@@ -148,7 +146,6 @@ PanelWindow {
                     collapseTimer.stop();
                     bar.expanded = true;
                     musicCloseTimer.stop();
-                    console.log("BAR-DBG hover | playing:", Music.playing, "| cc:", ControlCenter.open);
                     if (Music.playing && !ControlCenter.open && !Notifications.centerOpen && !Webcam.open)
                         musicOpenTimer.start();
                 } else {
