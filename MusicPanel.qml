@@ -367,7 +367,7 @@ PopupWindow {
                     id: mixSlider
 
                     Layout.alignment: Qt.AlignVCenter
-                    property real targetWidth: Music.section === 1 ? 140 : 0
+                    property real targetWidth: Music.section === 1 ? 110 : 0
                     Layout.preferredWidth: targetWidth
                     visible: targetWidth > 1
                     opacity: Music.section === 1 ? 1 : 0
