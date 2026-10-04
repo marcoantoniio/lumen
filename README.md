@@ -190,12 +190,20 @@ qs -c lumen ipc call camera toggle            # preview da câmera
 
 ## 🎨 Personalização
 
+> [!WARNING]
+> O botão do globo no rodapé do Control Center abre **`https://localhost`** —
+> a instância **SearXNG local do autor** do repositório. Se na sua máquina não
+> há um SearXNG aí (ou ele roda em outro host/porta), troque a URL no
+> `ControlCenterPanel.qml` (rodapé, ícone do globo) ou aponte para o buscador
+> que você preferir.
+
 | Quero mudar… | Arquivo |
 |---|---|
 | Cores, fontes e métricas | `Theme.qml` |
 | Cidade do clima (coordenadas) | `Weather.qml` → `location` |
 | Nomes amigáveis dos discos | `ControlCenterPanel.qml` → `diskName()` |
 | Comando do botão terminal | `ControlCenterPanel.qml` (rodapé) |
+| URL do botão navegador (SearXNG local) | `ControlCenterPanel.qml` (rodapé) |
 | Tamanho do painel | `Theme.qml` → `controlCenterPanelWidth` |
 
 As cores seguem o formato `#AARRGGBB` do Qt (o `AA` é a transparência).
