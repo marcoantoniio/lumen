@@ -50,7 +50,7 @@ PanelWindow {
         id: musicOpenTimer
         interval: 350
         onTriggered: {
-            if (Music.active && !ControlCenter.open && !Notifications.centerOpen)
+            if (Music.playing && !ControlCenter.open && !Notifications.centerOpen)
                 Music.panelOpen = true;
         }
     }
@@ -146,7 +146,7 @@ PanelWindow {
                     collapseTimer.stop();
                     bar.expanded = true;
                     musicCloseTimer.stop();
-                    if (Music.active && !ControlCenter.open && !Notifications.centerOpen && !Webcam.open)
+                    if (Music.playing && !ControlCenter.open && !Notifications.centerOpen && !Webcam.open)
                         musicOpenTimer.start();
                 } else {
                     collapseTimer.start();

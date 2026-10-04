@@ -37,7 +37,7 @@ PopupWindow {
     implicitWidth: panelWidth
     implicitHeight: Math.min(620, frame.implicitHeight)
     color: "transparent"
-    visible: Music.panelOpen && Music.active && !ControlCenter.open && !Notifications.centerOpen
+    visible: Music.panelOpen && Music.playing && !ControlCenter.open && !Notifications.centerOpen
 
     onVisibleChanged: {
         // Qt.callLater evita binding loop no visible (bug de flicker)
