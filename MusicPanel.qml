@@ -369,7 +369,10 @@ PopupWindow {
                     Layout.alignment: Qt.AlignVCenter
                     // Uma única animação (0..1) guia largura, opacidade e visibilidade
                     property real openness: Music.section === 1 ? 1 : 0
-                    Layout.preferredWidth: 110 * openness
+                    // 100px: precisa caber nos 396px úteis da linha (com os demais
+                    // itens e espaçamentos). Se estourar, o layout cresce e arrasta
+                    // a barra de progresso junto.
+                    Layout.preferredWidth: 100 * openness
                     visible: openness > 0.01
                     opacity: openness
                     value: Music.player && Music.player.volumeSupported ? Music.player.volume : 0
@@ -379,7 +382,7 @@ PopupWindow {
                     }
 
                     Behavior on openness {
-                        NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+                        NumberAnimation { duration: 260; easing.type: Easing.InOutCubic }
                     }
                 }
 
