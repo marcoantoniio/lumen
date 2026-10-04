@@ -36,7 +36,7 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
   ganha um brilho suave em gradiente radial:
   - **Laranja** — notificações (abre/fecha o painel)
   - **Magenta** — Control Center (abre/fecha)
-  - **Ciano** — Não Perturbe (silencia toasts, mantém tudo no histórico)
+  - **Ciano** — Recentes (abre/fecha o painel de arquivos recentes — hub)
 
 ### Control Center
 
@@ -184,6 +184,7 @@ qs -c lumen ipc call audio setVolume 0.5      # volume da saída (mostra o OSD)
 qs -c lumen ipc call timer pomodoro           # pomodoro/cronômetro (sem UI por enquanto)
 qs -c lumen ipc call timer status             # estado do pomodoro/cronômetro
 qs -c lumen ipc call camera toggle            # preview da câmera
+qs -c lumen ipc call recent toggle            # painel de arquivos recentes (hub)
 ```
 
 ---
@@ -225,6 +226,7 @@ As cores seguem o formato `#AARRGGBB` do Qt (o `AA` é a transparência).
 | `Workspaces.qml`, `Umbriel.qml` | desktops (KWin + Umbriel) |
 | `Notifications.qml`, `NotificationCenter.qml`, `NotificationPopup.qml`, `NotificationPopups.qml`, `FilterTab.qml` | notificações |
 | `Tray.qml` | bandeja do sistema |
+| `RecentFiles.qml`, `RecentFilesPanel.qml` | painel de arquivos recentes (hub do botão ciano) |
 
 ---
 

@@ -2,7 +2,7 @@
 // Cada cor tem uma função:
 // - Laranja: abre/fecha o painel de notificações.
 // - Magenta: abre/fecha o Control Center.
-// - Ciano: Não Perturbe (silencia toasts, mantém no histórico).
+// - Ciano: abre/fecha o painel de arquivos recentes (hub).
 // O selecionado ganha brilho.
 
 import QtQuick
@@ -26,10 +26,10 @@ Row {
         onActivated: ControlCenter.toggle()
     }
 
-    // ---- não perturbe (DND) ----
+    // ---- recentes (hub de arquivos recentes) ----
     CategoryCircle {
         dotColor: Theme.accentCool
-        selected: Notifications.dnd
-        onActivated: Notifications.dnd = !Notifications.dnd
+        selected: RecentFiles.open
+        onActivated: RecentFiles.toggle()
     }
 }

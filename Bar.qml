@@ -50,7 +50,8 @@ PanelWindow {
         id: musicOpenTimer
         interval: 350
         onTriggered: {
-            if (Music.playing && !ControlCenter.open && !Notifications.centerOpen)
+            if (Music.playing && !ControlCenter.open && !Notifications.centerOpen
+                    && !Webcam.open && !RecentFiles.open)
                 Music.panelOpen = true;
         }
     }
@@ -101,7 +102,8 @@ PanelWindow {
             ? Theme.controlCenterPanelWidth
             : (Notifications.centerOpen ? Theme.notificationPanelWidth
             : (Music.panelOpen ? Theme.musicPanelWidth
-            : (Webcam.open ? Theme.cameraPanelWidth : 0)))
+            : (RecentFiles.open ? Theme.recentPanelWidth
+            : (Webcam.open ? Theme.cameraPanelWidth : 0))))
 
         property real animatedPanelWidth: panelTargetWidth
 
@@ -274,6 +276,11 @@ PanelWindow {
     }
 
     CameraPanel {
+        panelWindow: bar
+        anchorItem: pill
+    }
+
+    RecentFilesPanel {
         panelWindow: bar
         anchorItem: pill
     }

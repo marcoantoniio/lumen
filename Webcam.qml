@@ -15,13 +15,16 @@ Singleton {
 
     function toggle(): void {
         root.open = !root.open;
-        if (root.open)
+        if (root.open) {
             ControlCenter.open = false;
+            RecentFiles.open = false;
+        }
     }
 
     function open(): void {
         root.open = true;
         ControlCenter.open = false;
+        RecentFiles.open = false;
     }
 
     IpcHandler {
