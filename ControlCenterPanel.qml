@@ -161,9 +161,8 @@ PopupWindow {
                    ? anchorItem.y + anchorItem.height - 1
                    : (panelWindow ? panelWindow.height + Theme.barMargin : 0)
     implicitWidth: panelWidth
-    // Altura dinâmica: se ajusta ao conteúdo da aba atual (moldura fixa = 132px)
-    readonly property var currentPage: pages.itemAt(ControlCenter.tab)
-    implicitHeight: Math.min(464, 132 + (currentPage ? currentPage.implicitHeight : 0))
+    // Altura fixa: redimensionar a janela ao trocar de aba glicha no Wayland
+    implicitHeight: 464
     color: "transparent"
     visible: ControlCenter.open
 
@@ -195,15 +194,18 @@ PopupWindow {
     property int _lastTab: 0
     property Item _animItem: null
 
-    function animatePage() {
+    // dir: 1 = aba à direita (conteúdo desliza para a direita), -1 = esquerda
+    function animatePage(dir) {
         const item = pages.itemAt(ControlCenter.tab);
         if (!item)
             return;
         panel._animItem = item;
         item.opacity = 0;
         item.scale = 0.98;
+        item.shiftX = -dir * 42;
         fadeIn.restart();
         popIn.restart();
+        slideIn.restart();
     }
 
     NumberAnimation {
@@ -226,12 +228,23 @@ PopupWindow {
         easing.type: Easing.OutCubic
     }
 
+    NumberAnimation {
+        id: slideIn
+
+        target: panel._animItem
+        property: "shiftX"
+        to: 0
+        duration: 200
+        easing.type: Easing.OutCubic
+    }
+
     Connections {
         target: ControlCenter
 
         function onTabChanged() {
+            const dir = ControlCenter.tab > panel._lastTab ? 1 : -1;
             panel._lastTab = ControlCenter.tab;
-            panel.animatePage();
+            panel.animatePage(dir);
         }
     }
 
@@ -298,7 +311,7 @@ PopupWindow {
         onTriggered: Clipboard.refresh()
     }
 
-    Component.onCompleted: Clipboard.refresh()
+    Component.onCompleted: { sysProc.running = true; Clipboard.refresh(); }
 
     Rectangle {
         id: frame
@@ -405,8 +418,13 @@ PopupWindow {
 
                 // ================= PAGE 0: CONTROL CENTER =================
                 RowLayout {
+                    id: ccPage
+
                     Layout.fillWidth: true
                     spacing: 18
+
+                    property real shiftX: 0
+                    transform: Translate { x: ccPage.shiftX }
 
                 // -------- esquerda: Quick Settings + Sessão --------
                 ColumnLayout {
@@ -683,9 +701,14 @@ PopupWindow {
                 // ================= PAGE 1: DASHBOARD =================
                 // Saudação + Calendário | Clima | Sistema
                 ColumnLayout {
+                    id: dashPage
+
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     spacing: 8
+
+                    property real shiftX: 0
+                    transform: Translate { x: dashPage.shiftX }
 
                     Text {
                         Layout.fillWidth: true
@@ -721,8 +744,13 @@ PopupWindow {
 
                 // ================= PAGE 2: CLIPBOARD & NOTES =================
                 ColumnLayout {
+                    id: clipPage
+
                     Layout.fillWidth: true
                     spacing: 8
+
+                    property real shiftX: 0
+                    transform: Translate { x: clipPage.shiftX }
 
                 RowLayout {
                     Layout.fillWidth: true
