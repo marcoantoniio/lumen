@@ -38,9 +38,8 @@ PopupWindow {
                    ? anchorItem.y + anchorItem.height - 1
                    : (panelWindow ? panelWindow.height + Theme.barMargin : 0)
     implicitWidth: panelWidth
-    // Altura fixa: abrir/fechar seções não pode redimensionar a janela
-    // (no Wayland o resize faz o hover se perder e o painel some)
-    implicitHeight: 430
+    // Altura acompanha o conteúdo (compacto)
+    implicitHeight: Math.min(620, frame.implicitHeight)
     color: "transparent"
     visible: Music.panelOpen && !ControlCenter.open && !Notifications.centerOpen
 
@@ -420,7 +419,7 @@ PopupWindow {
 
                 Item {
                     Layout.fillWidth: true
-                    implicitHeight: deviceFlow.implicitHeight
+                    implicitHeight: 96
 
                     Flow {
                         id: deviceFlow
@@ -598,7 +597,7 @@ PopupWindow {
                     id: lyricsFlick
 
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Math.min(130, lyricsCol.implicitHeight)
+                    Layout.preferredHeight: Math.min(105, lyricsCol.implicitHeight)
                     contentHeight: lyricsCol.implicitHeight
                     clip: true
                     interactive: contentHeight > height
