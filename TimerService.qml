@@ -1,11 +1,11 @@
 pragma Singleton
 
-// Pomodoro + cronômetro. O estado vive aqui (fora do painel), então continua
-// contando com o painel fechado. Ao concluir uma fase, toca um som e mostra um
-// aviso na ilha.
+// Pomodoro + cronômetro + timer (contagem regressiva). O estado vive aqui
+// (fora do painel), então continua contando com o painel fechado. Ao concluir,
+// toca um som e mostra um aviso na ilha.
 //
 // IPC:
-//   qs -c lumen ipc call timer pomodoro|stopwatch|reset|status
+//   qs -c lumen ipc call timer pomodoro|stopwatch|countdown|setMinutes|reset|status
 
 import Quickshell
 import Quickshell.Io
@@ -14,10 +14,16 @@ import QtQuick
 Singleton {
     id: root
 
-    // ---------- pomodoro ----------
-    readonly property int focusMinutes: 25
-    readonly property int shortBreakMinutes: 5
-    readonly property int longBreakMinutes: 15
+    readonly property string sound: "/usr/share/sounds/freedesktop/stereo/complete.oga"
+
+    function playSound() {
+        Quickshell.execDetached(["pw-play", root.sound]);
+    }
+
+    // ---------- pomodoro (tempos configuráveis) ----------
+    property int focusMinutes: 25
+    property int shortBreakMinutes: 5
+    property int longBreakMinutes: 15
 
     property int pomoPhase: 0 // 0 = ocioso, 1 = foco, 2 = pausa, 3 = pausa longa
     property int pomoRemaining: focusMinutes * 60
@@ -34,6 +40,18 @@ Singleton {
         : pomoPhase === 2 ? "Pausa"
         : pomoPhase === 3 ? "Pausa longa"
         : "Pronto"
+
+    function adjustPomodoro(kind, delta) {
+        if (kind === "focus")
+            root.focusMinutes = Math.max(5, Math.min(120, root.focusMinutes + delta));
+        else if (kind === "short")
+            root.shortBreakMinutes = Math.max(1, Math.min(60, root.shortBreakMinutes + delta));
+        else
+            root.longBreakMinutes = Math.max(5, Math.min(90, root.longBreakMinutes + delta));
+
+        if (root.pomoPhase === 0)
+            root.pomoRemaining = root.focusMinutes * 60;
+    }
 
     function pomoToggle(): void {
         if (root.pomoPhase === 0) {
@@ -57,7 +75,7 @@ Singleton {
 
     function advancePhase(playSound) {
         if (playSound)
-            Quickshell.execDetached(["pw-play", "/usr/share/sounds/freedesktop/stereo/complete.oga"]);
+            root.playSound();
 
         let message = "";
         if (root.pomoPhase === 1) {
@@ -83,6 +101,49 @@ Singleton {
                 root.pomoRemaining -= 1;
             if (root.pomoRemaining <= 0)
                 root.advancePhase(true);
+        }
+    }
+
+    // ---------- timer (contagem regressiva) ----------
+    property int timerMinutes: 10
+    property int timerRemaining: timerMinutes * 60
+    property bool timerRunning: false
+
+    readonly property real timerProgress: timerMinutes > 0 ? 1 - timerRemaining / (timerMinutes * 60) : 0
+
+    function timerSet(minutes) {
+        root.timerRunning = false;
+        root.timerMinutes = Math.max(1, Math.min(180, minutes));
+        root.timerRemaining = root.timerMinutes * 60;
+    }
+
+    function timerAdjust(delta) {
+        root.timerSet(root.timerMinutes + delta);
+    }
+
+    function timerToggle() {
+        if (root.timerRemaining <= 0)
+            root.timerRemaining = root.timerMinutes * 60;
+        root.timerRunning = !root.timerRunning;
+    }
+
+    function timerReset() {
+        root.timerRunning = false;
+        root.timerRemaining = root.timerMinutes * 60;
+    }
+
+    Timer {
+        interval: 1000
+        repeat: true
+        running: root.timerRunning
+        onTriggered: {
+            if (root.timerRemaining > 0)
+                root.timerRemaining -= 1;
+            if (root.timerRemaining <= 0) {
+                root.timerRunning = false;
+                root.playSound();
+                root.showMessage("Tempo!");
+            }
         }
     }
 
@@ -144,10 +205,14 @@ Singleton {
 
         function pomodoro(): void { root.pomoToggle(); }
         function stopwatch(): void { root.swToggle(); }
-        function reset(): void { root.pomoReset(); root.swReset(); }
+        function countdown(): void { root.timerToggle(); }
+        function setMinutes(m: int): void { root.timerSet(m); }
+        function reset(): void { root.pomoReset(); root.swReset(); root.timerReset(); }
         function status(): string {
             return "pomodoro: " + root.pomoLabel + " " + root.format(root.pomoRemaining)
                  + (root.pomoRunning ? " (rodando)" : " (parado)")
+                 + " | timer: " + root.format(root.timerRemaining)
+                 + (root.timerRunning ? " (rodando)" : " (parado)")
                  + " | cronômetro: " + root.format(root.swElapsed);
         }
     }

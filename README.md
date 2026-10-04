@@ -51,8 +51,9 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
   capa e **brilho da cor do álbum**, controles (anterior/play/próxima), seek,
   **saída de áudio**, **mixer por aplicativo** e **letras** (lrclib, com
   sincronia e linha atual destacada).
-- **Timer**: aba com **Pomodoro** (foco/pausas, som e aviso na ilha) e
-  **Cronômetro** (com voltas). Continua contando com o painel fechado.
+- **Timer**: aba com **Pomodoro** (tempos de foco/pausa/longa ajustáveis,
+  som e aviso na ilha), **Cronômetro** (com voltas) e **Timer** (contagem
+  regressiva com tempos rápidos) — continua contando com o painel fechado.
 - **Dashboard**: saudação ("Bom dia/Boa tarde/Boa noite, Nome"), **calendário**
   com semana atual + mini-mês, **clima** com previsão horária (umidade, vento,
   chuva) e **Sistema** com CPU, RAM, GPU, temperatura, disco e uptime — tudo

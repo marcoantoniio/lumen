@@ -161,7 +161,7 @@ PopupWindow {
                    ? anchorItem.y + anchorItem.height - 1
                    : (panelWindow ? panelWindow.height + Theme.barMargin : 0)
     implicitWidth: panelWidth
-    implicitHeight: 410
+    implicitHeight: 464
     color: "transparent"
     visible: ControlCenter.open
 
