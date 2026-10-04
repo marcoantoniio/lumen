@@ -5,9 +5,21 @@ pragma Singleton
 
 import Quickshell
 import Quickshell.Io
+import QtQuick
 
 Singleton {
     id: root
+
+    // Largura do painel (animada ao trocar de aba; a aba Timer é mais estreita)
+    readonly property int targetWidth: root.tab === 3 ? 450 : Theme.controlCenterPanelWidth
+    property real panelWidth: targetWidth
+
+    Behavior on panelWidth {
+        NumberAnimation {
+            duration: 220
+            easing.type: Easing.OutCubic
+        }
+    }
 
     property bool open: false
     property int tab: 0

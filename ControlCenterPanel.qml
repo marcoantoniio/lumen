@@ -149,7 +149,7 @@ PopupWindow {
         }
     }
 
-    readonly property int panelWidth: Theme.controlCenterPanelWidth
+    readonly property real panelWidth: ControlCenter.panelWidth
     // Largura exata de cada coluna do Control Center (margens 16*2 + spacing 18)
     readonly property real controlColumnWidth: (panelWidth - 32 - 18) / 2
 
@@ -345,6 +345,7 @@ PopupWindow {
 
             // ---- abas + fechar ----
             RowLayout {
+                id: tabBar
                 Layout.fillWidth: true
                 spacing: 8
 
@@ -402,6 +403,7 @@ PopupWindow {
 
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                Layout.minimumWidth: 0
                 Layout.minimumHeight: 0
                 Layout.preferredHeight: currentPage ? currentPage.implicitHeight : 0
                 currentIndex: ControlCenter.tab

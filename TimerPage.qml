@@ -110,6 +110,8 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: 8
 
+        Item { Layout.fillWidth: true }
+
         PanelTab {
             label: "Pomodoro"
             selected: root.mode === 0
