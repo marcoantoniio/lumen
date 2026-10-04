@@ -1,6 +1,7 @@
 // Aba Timer do Control Center: Pomodoro (tempos ajustáveis), Cronômetro e
 // Timer (contagem regressiva) — sub-abas.
-// Layout: bloco do tempo (label + tempo + barra) à esquerda, botões à direita.
+// Layout: bloco do tempo (label + tempo + barra, centralizados) à esquerda e
+// os botões em coluna vertical à direita.
 
 import QtQuick
 import QtQuick.Layouts
@@ -142,13 +143,16 @@ ColumnLayout {
             Layout.fillWidth: true
             spacing: 12
 
-            // bloco do tempo: label + tempo + barra (só embaixo do tempo)
+            // bloco do tempo (label + tempo + barra, centralizados entre si)
             ColumnLayout {
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: 6
-                spacing: 3
+                spacing: 4
 
                 Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 180
+                    horizontalAlignment: Text.AlignHCenter
                     text: (TimerService.pomoPhase === 0 ? "Pronto" : TimerService.pomoLabel)
                           + " · " + TimerService.pomoCompleted
                           + (TimerService.pomoCompleted === 1 ? " concluído" : " concluídos")
@@ -156,9 +160,11 @@ ColumnLayout {
                     font.family: Theme.fontFamily
                     font.pixelSize: 11
                     font.bold: true
+                    elide: Text.ElideRight
                 }
 
                 Text {
+                    Layout.alignment: Qt.AlignHCenter
                     text: TimerService.format(TimerService.pomoRemaining)
                     color: Theme.foreground
                     font.family: Theme.fontFamily
@@ -167,6 +173,7 @@ ColumnLayout {
                 }
 
                 Rectangle {
+                    Layout.alignment: Qt.AlignHCenter
                     implicitWidth: 180
                     implicitHeight: 5
                     radius: 2.5
@@ -187,8 +194,8 @@ ColumnLayout {
 
             Item { Layout.fillWidth: true }
 
-            // botões à direita
-            RowLayout {
+            // botões em coluna
+            ColumnLayout {
                 Layout.alignment: Qt.AlignVCenter
                 spacing: 8
 
@@ -201,8 +208,6 @@ ColumnLayout {
                     glyph: "\u{F0415}" // nf-md-plus
                     onActivated: TimerService.pomoAdjust(5)
                 }
-
-                Item { Layout.preferredWidth: 2 }
 
                 SquareButton {
                     glyph: TimerService.pomoRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
@@ -263,6 +268,8 @@ ColumnLayout {
             Text {
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: 6
+                Layout.preferredWidth: 180
+                horizontalAlignment: Text.AlignHCenter
                 text: TimerService.format(TimerService.swElapsed)
                 color: Theme.foreground
                 font.family: Theme.fontFamily
@@ -272,7 +279,7 @@ ColumnLayout {
 
             Item { Layout.fillWidth: true }
 
-            RowLayout {
+            ColumnLayout {
                 Layout.alignment: Qt.AlignVCenter
                 spacing: 8
 
@@ -358,9 +365,12 @@ ColumnLayout {
             ColumnLayout {
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: 6
-                spacing: 3
+                spacing: 4
 
                 Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 180
+                    horizontalAlignment: Text.AlignHCenter
                     text: TimerService.timerRunning ? "Contando…" : "Timer"
                     color: Theme.accentCool
                     font.family: Theme.fontFamily
@@ -369,6 +379,7 @@ ColumnLayout {
                 }
 
                 Text {
+                    Layout.alignment: Qt.AlignHCenter
                     text: TimerService.format(TimerService.timerRemaining)
                     color: Theme.foreground
                     font.family: Theme.fontFamily
@@ -377,6 +388,7 @@ ColumnLayout {
                 }
 
                 Rectangle {
+                    Layout.alignment: Qt.AlignHCenter
                     implicitWidth: 180
                     implicitHeight: 5
                     radius: 2.5
@@ -397,7 +409,7 @@ ColumnLayout {
 
             Item { Layout.fillWidth: true }
 
-            RowLayout {
+            ColumnLayout {
                 Layout.alignment: Qt.AlignVCenter
                 spacing: 8
 
@@ -410,8 +422,6 @@ ColumnLayout {
                     glyph: "\u{F0415}" // nf-md-plus (1 min)
                     onActivated: TimerService.timerAdjust(1)
                 }
-
-                Item { Layout.preferredWidth: 2 }
 
                 SquareButton {
                     glyph: TimerService.timerRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
