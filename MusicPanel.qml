@@ -469,31 +469,64 @@ PopupWindow {
                             model: panel.sinks
 
                             delegate: Rectangle {
+                                id: deviceChip
+
                                 required property var modelData
 
                                 readonly property bool current: Pipewire.defaultAudioSink === modelData
 
-                                implicitWidth: deviceLabel.implicitWidth + 22
-                                implicitHeight: 24
-                                radius: 12
-                                color: current
-                                       ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.18)
-                                       : Theme.surfaceHover
+                                implicitWidth: deviceRow.implicitWidth + 24
+                                implicitHeight: 26
+                                radius: 13
+                                color: deviceChip.current
+                                       ? Theme.accent
+                                       : (deviceArea.containsMouse
+                                          ? Qt.lighter(Theme.surfaceHover, 1.35)
+                                          : Theme.surfaceHover)
                                 border.width: 1
-                                border.color: current ? Theme.accent : "transparent"
+                                border.color: deviceChip.current
+                                              ? Theme.accent
+                                              : (deviceArea.containsMouse ? Theme.border : "transparent")
 
-                                Text {
-                                    id: deviceLabel
+                                Behavior on color {
+                                    ColorAnimation { duration: 120 }
+                                }
+                                Behavior on border.color {
+                                    ColorAnimation { duration: 120 }
+                                }
+
+                                Row {
+                                    id: deviceRow
 
                                     anchors.centerIn: parent
-                                    text: modelData.description !== "" ? modelData.description : modelData.name
-                                    color: current ? Theme.accent : Theme.foreground
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 10
-                                    elide: Text.ElideRight
+                                    spacing: 6
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        visible: deviceChip.current
+                                        text: "\u{F012C}" // check
+                                        color: Theme.accentInk
+                                        font.family: Theme.iconFont
+                                        font.pixelSize: 12
+                                    }
+
+                                    Text {
+                                        id: deviceLabel
+
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: Math.min(implicitWidth, 300)
+                                        text: modelData.description !== "" ? modelData.description : modelData.name
+                                        color: deviceChip.current ? Theme.accentInk : Theme.foreground
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 10
+                                        font.weight: deviceChip.current ? Font.Medium : Font.Normal
+                                        elide: Text.ElideRight
+                                    }
                                 }
 
                                 MouseArea {
+                                    id: deviceArea
+
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: Pipewire.preferredDefaultAudioSink = modelData
