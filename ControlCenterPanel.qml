@@ -731,6 +731,7 @@ PopupWindow {
 
                         Text {
                             Layout.alignment: Qt.AlignVCenter
+                            visible: Music.playing
                             text: Qt.formatDateTime(dashClock.date, "ddd d MMM")
                             color: Theme.foregroundDim
                             font.family: Theme.fontFamily
@@ -739,6 +740,7 @@ PopupWindow {
 
                         Text {
                             Layout.alignment: Qt.AlignVCenter
+                            visible: Music.playing
                             text: Qt.formatDateTime(dashClock.date, "HH:mm")
                             color: Theme.foreground
                             font.family: Theme.fontFamily
