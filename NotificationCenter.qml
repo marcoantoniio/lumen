@@ -33,8 +33,9 @@ PopupWindow {
     visible: Notifications.centerOpen
 
     onVisibleChanged: {
+        // Qt.callLater evita binding loop no visible (bug de flicker)
         if (!visible && Notifications.centerOpen)
-            Notifications.centerOpen = false;
+            Qt.callLater(() => Notifications.centerOpen = false);
     }
 
     Rectangle {

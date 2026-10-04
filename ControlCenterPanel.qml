@@ -149,7 +149,7 @@ PopupWindow {
         }
     }
 
-    readonly property real panelWidth: ControlCenter.panelWidth
+    readonly property int panelWidth: Theme.controlCenterPanelWidth
     // Largura exata de cada coluna do Control Center (margens 16*2 + spacing 18)
     readonly property real controlColumnWidth: (panelWidth - 32 - 18) / 2
 
@@ -168,8 +168,9 @@ PopupWindow {
     visible: ControlCenter.open
 
     onVisibleChanged: {
+        // Qt.callLater evita binding loop no visible (bug de flicker)
         if (!visible && ControlCenter.open)
-            ControlCenter.open = false;
+            Qt.callLater(() => ControlCenter.open = false);
         if (visible)
             Brightness.refresh();
     }
@@ -365,12 +366,6 @@ PopupWindow {
                     label: "Clipboard & Notes"
                     selected: ControlCenter.tab === 2
                     onActivated: ControlCenter.tab = 2
-                }
-
-                PanelTab {
-                    label: "Timer"
-                    selected: ControlCenter.tab === 3
-                    onActivated: ControlCenter.tab = 3
                 }
 
                 Item { Layout.fillWidth: true }
@@ -855,12 +850,6 @@ PopupWindow {
                     }
                 }
             }
-
-                // ================= PAGE 3: TIMER =================
-                TimerPage {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                }
             }
 
             Rectangle {

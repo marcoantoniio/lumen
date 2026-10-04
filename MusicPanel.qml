@@ -40,8 +40,9 @@ PopupWindow {
     visible: Music.panelOpen && Music.active && !ControlCenter.open && !Notifications.centerOpen
 
     onVisibleChanged: {
+        // Qt.callLater evita binding loop no visible (bug de flicker)
         if (!visible && Music.panelOpen)
-            Music.panelOpen = false;
+            Qt.callLater(() => Music.panelOpen = false);
     }
 
     HoverHandler {

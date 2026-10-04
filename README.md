@@ -51,9 +51,6 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
   capa e **brilho da cor do álbum**, controles (anterior/play/próxima), seek,
   **saída de áudio**, **mixer por aplicativo** e **letras** (lrclib, com
   sincronia e linha atual destacada).
-- **Timer**: aba com **Pomodoro** (tempos de foco/pausa/longa ajustáveis,
-  som e aviso na ilha), **Cronômetro** (com voltas) e **Timer** (contagem
-  regressiva com tempos rápidos) — continua contando com o painel fechado.
 - **Dashboard**: saudação ("Bom dia/Boa tarde/Boa noite, Nome"), **calendário**
   com semana atual + mini-mês, **clima** com previsão horária (umidade, vento,
   chuva) e **Sistema** com CPU, RAM, GPU, temperatura, disco e uptime — tudo
@@ -184,7 +181,7 @@ qs -c lumen ipc call recorder stop            # para e salva o arquivo
 qs -c lumen ipc call music status             # música atual (MPRIS)
 qs -c lumen ipc call music toggle             # play/pause
 qs -c lumen ipc call audio setVolume 0.5      # volume da saída (mostra o OSD)
-qs -c lumen ipc call timer pomodoro           # inicia/pausa o pomodoro
+qs -c lumen ipc call timer pomodoro           # pomodoro/cronômetro (sem UI por enquanto)
 qs -c lumen ipc call timer status             # estado do pomodoro/cronômetro
 qs -c lumen ipc call camera toggle            # preview da câmera
 ```

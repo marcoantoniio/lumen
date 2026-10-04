@@ -40,8 +40,9 @@ PopupWindow {
     onVisibleChanged: {
         if (visible && selectedDevice === null && cameras.length > 0)
             selectedDevice = cameras[0];
+        // Qt.callLater evita binding loop no visible (bug de flicker)
         if (!visible && Webcam.open)
-            Webcam.open = false;
+            Qt.callLater(() => Webcam.open = false);
     }
 
     MediaDevices {

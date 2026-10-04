@@ -98,7 +98,7 @@ PanelWindow {
         // Quando um painel está aberto, a ilha cresce até a largura dele
         // e encosta no painel (cantos de baixo retos).
         readonly property real panelTargetWidth: ControlCenter.open
-            ? ControlCenter.panelWidth
+            ? Theme.controlCenterPanelWidth
             : (Notifications.centerOpen ? Theme.notificationPanelWidth
             : (Music.panelOpen ? Theme.musicPanelWidth
             : (Webcam.open ? Theme.cameraPanelWidth : 0)))
@@ -106,8 +106,6 @@ PanelWindow {
         property real animatedPanelWidth: panelTargetWidth
 
         Behavior on animatedPanelWidth {
-            enabled: !ControlCenter.open
-
             NumberAnimation {
                 duration: 220
                 easing.type: Easing.OutCubic
@@ -266,8 +264,6 @@ PanelWindow {
     }
 
     ControlCenterPanel {
-        id: ccPanel
-
         panelWindow: bar
         anchorItem: pill
     }
