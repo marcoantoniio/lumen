@@ -121,7 +121,7 @@ PanelWindow {
         readonly property real centerWidth: centerMode === "volume" ? volumeOsd.implicitWidth
             : centerMode === "rec" ? recIndicator.implicitWidth
             : centerMode === "timer" ? timerNotice.implicitWidth
-            : centerMode === "music" ? musicCenter.implicitWidth
+            : centerMode === "music" ? nowPlaying.implicitWidth
             : clockItem.implicitWidth
 
         width: Math.max(centerWidth + Theme.pillPadding * 2
@@ -203,23 +203,10 @@ PanelWindow {
             visible: pill.centerMode === "volume"
         }
 
-        // Música: now playing + relógio compacto (senão não há relógio visível)
-        Row {
-            id: musicCenter
-
+        NowPlaying {
+            id: nowPlaying
             anchors.centerIn: parent
-            height: Theme.barHeight
-            spacing: 10
             visible: pill.centerMode === "music"
-
-            NowPlaying {
-                anchors.verticalCenter: parent.verticalCenter
-            }
-
-            Clock {
-                compact: true
-                anchors.verticalCenter: parent.verticalCenter
-            }
         }
 
         TimerNotice {
