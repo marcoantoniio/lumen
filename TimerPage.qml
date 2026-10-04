@@ -1,6 +1,6 @@
 // Aba Timer do Control Center: Pomodoro (tempos ajustáveis), Cronômetro e
 // Timer (contagem regressiva) — sub-abas.
-// Layout: tempo à esquerda e botões quadradinhos à direita.
+// Layout: bloco do tempo (label + tempo + barra) à esquerda, botões à direita.
 
 import QtQuick
 import QtQuick.Layouts
@@ -10,7 +10,7 @@ ColumnLayout {
 
     property int mode: 0 // 0 = pomodoro, 1 = cronômetro, 2 = timer
 
-    spacing: 8
+    spacing: 10
 
     // Botão quadradinho com ícone
     component SquareButton: Rectangle {
@@ -59,6 +59,50 @@ ColumnLayout {
         }
     }
 
+    // Chip pequeno (durações/presets)
+    component TimeChip: Rectangle {
+        id: chip
+
+        property string text: ""
+        property bool current: false
+
+        signal activated()
+
+        implicitWidth: chipLabel.implicitWidth + 16
+        implicitHeight: 22
+        radius: 7
+        color: chip.current
+               ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2)
+               : (chipArea.containsMouse
+                  ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.14)
+                  : Theme.surfaceHover)
+        border.width: 1
+        border.color: chip.current ? Theme.accent : "transparent"
+
+        Behavior on color {
+            ColorAnimation { duration: 120 }
+        }
+
+        Text {
+            id: chipLabel
+
+            anchors.centerIn: parent
+            text: chip.text
+            color: chip.current ? Theme.accent : (chipArea.containsMouse ? Theme.accent : Theme.foregroundDim)
+            font.family: Theme.fontFamily
+            font.pixelSize: 10
+        }
+
+        MouseArea {
+            id: chipArea
+
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: chip.activated()
+        }
+    }
+
     // ---- sub-abas ----
     RowLayout {
         Layout.fillWidth: true
@@ -94,86 +138,94 @@ ColumnLayout {
 
         Item { Layout.fillHeight: true }
 
-        // tempo à esquerda, botões à direita
         RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 12
 
-            Text {
+            // bloco do tempo: label + tempo + barra (só embaixo do tempo)
+            ColumnLayout {
+                Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: 6
-                text: TimerService.format(TimerService.pomoRemaining)
-                color: Theme.foreground
-                font.family: Theme.fontFamily
-                font.pixelSize: 40
-                font.bold: true
+                spacing: 3
+
+                Text {
+                    text: (TimerService.pomoPhase === 0 ? "Pronto" : TimerService.pomoLabel)
+                          + " · " + TimerService.pomoCompleted
+                          + (TimerService.pomoCompleted === 1 ? " concluído" : " concluídos")
+                    color: TimerService.pomoPhase === 1 ? Theme.accentAlt : Theme.accentCool
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 11
+                    font.bold: true
+                }
+
+                Text {
+                    text: TimerService.format(TimerService.pomoRemaining)
+                    color: Theme.foreground
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 42
+                    font.bold: true
+                }
+
+                Rectangle {
+                    implicitWidth: 180
+                    implicitHeight: 5
+                    radius: 2.5
+                    color: Theme.surfaceHover
+
+                    Rectangle {
+                        width: Math.max(0, Math.min(1, TimerService.pomoProgress)) * parent.width
+                        height: parent.height
+                        radius: parent.radius
+                        color: TimerService.pomoPhase === 1 ? Theme.accentAlt : Theme.accentCool
+
+                        Behavior on width {
+                            NumberAnimation { duration: 250 }
+                        }
+                    }
+                }
             }
 
             Item { Layout.fillWidth: true }
 
-            SquareButton {
-                glyph: "\u{F0374}" // nf-md-minus
-                onActivated: TimerService.pomoAdjust(-5)
-            }
+            // botões à direita
+            RowLayout {
+                Layout.alignment: Qt.AlignVCenter
+                spacing: 8
 
-            SquareButton {
-                glyph: "\u{F0415}" // nf-md-plus
-                onActivated: TimerService.pomoAdjust(5)
-            }
+                SquareButton {
+                    glyph: "\u{F0374}" // nf-md-minus
+                    onActivated: TimerService.pomoAdjust(-5)
+                }
 
-            Item { Layout.preferredWidth: 2 }
+                SquareButton {
+                    glyph: "\u{F0415}" // nf-md-plus
+                    onActivated: TimerService.pomoAdjust(5)
+                }
 
-            SquareButton {
-                glyph: TimerService.pomoRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
-                primary: true
-                onActivated: TimerService.pomoToggle()
-            }
+                Item { Layout.preferredWidth: 2 }
 
-            SquareButton {
-                glyph: "\u{F0709}" // nf-md-restart
-                onActivated: TimerService.pomoReset()
-            }
+                SquareButton {
+                    glyph: TimerService.pomoRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
+                    primary: true
+                    onActivated: TimerService.pomoToggle()
+                }
 
-            SquareButton {
-                glyph: "\u{F04AD}" // nf-md-skip_next (pular fase)
-                onActivated: TimerService.pomoSkip()
-            }
-        }
+                SquareButton {
+                    glyph: "\u{F0709}" // nf-md-restart
+                    onActivated: TimerService.pomoReset()
+                }
 
-        // progresso
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.leftMargin: 6
-            Layout.rightMargin: 6
-            implicitHeight: 5
-            radius: 2.5
-            color: Theme.surfaceHover
-
-            Rectangle {
-                width: Math.max(0, Math.min(1, TimerService.pomoProgress)) * parent.width
-                height: parent.height
-                radius: parent.radius
-                color: TimerService.pomoPhase === 1 ? Theme.accentAlt : Theme.accentCool
-
-                Behavior on width {
-                    NumberAnimation { duration: 250 }
+                SquareButton {
+                    glyph: "\u{F04AD}" // nf-md-skip_next (pular fase)
+                    onActivated: TimerService.pomoSkip()
                 }
             }
         }
 
-        // status + durações (clique alterna os presets)
+        // durações (clique alterna os presets)
         Row {
             Layout.alignment: Qt.AlignHCenter
-            spacing: 10
-
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: (TimerService.pomoPhase === 0 ? "Pronto" : TimerService.pomoLabel)
-                      + " · " + TimerService.pomoCompleted
-                      + (TimerService.pomoCompleted === 1 ? " concluído" : " concluídos")
-                color: Theme.foregroundDim
-                font.family: Theme.fontFamily
-                font.pixelSize: 10
-            }
+            spacing: 6
 
             Repeater {
                 model: [
@@ -182,24 +234,12 @@ ColumnLayout {
                     { label: "Longa", kind: "long", minutes: TimerService.longBreakMinutes }
                 ]
 
-                delegate: Text {
+                delegate: TimeChip {
                     required property var modelData
 
                     anchors.verticalCenter: parent.verticalCenter
                     text: modelData.label + " " + modelData.minutes + "min"
-                    color: chipArea.containsMouse ? Theme.accent : Theme.foregroundDim
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 10
-
-                    MouseArea {
-                        id: chipArea
-
-                        anchors.fill: parent
-                        anchors.margins: -3
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: TimerService.cyclePomodoro(modelData.kind)
-                    }
+                    onActivated: TimerService.cyclePomodoro(modelData.kind)
                 }
             }
         }
@@ -218,33 +258,39 @@ ColumnLayout {
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 12
 
             Text {
+                Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: 6
                 text: TimerService.format(TimerService.swElapsed)
                 color: Theme.foreground
                 font.family: Theme.fontFamily
-                font.pixelSize: 40
+                font.pixelSize: 42
                 font.bold: true
             }
 
             Item { Layout.fillWidth: true }
 
-            SquareButton {
-                glyph: TimerService.swRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
-                primary: true
-                onActivated: TimerService.swToggle()
-            }
+            RowLayout {
+                Layout.alignment: Qt.AlignVCenter
+                spacing: 8
 
-            SquareButton {
-                glyph: "\u{F023B}" // nf-md-flag (volta)
-                onActivated: TimerService.swLap()
-            }
+                SquareButton {
+                    glyph: TimerService.swRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
+                    primary: true
+                    onActivated: TimerService.swToggle()
+                }
 
-            SquareButton {
-                glyph: "\u{F0709}" // nf-md-restart
-                onActivated: TimerService.swReset()
+                SquareButton {
+                    glyph: "\u{F023B}" // nf-md-flag (volta)
+                    onActivated: TimerService.swLap()
+                }
+
+                SquareButton {
+                    glyph: "\u{F0709}" // nf-md-restart
+                    onActivated: TimerService.swReset()
+                }
             }
         }
 
@@ -307,60 +353,75 @@ ColumnLayout {
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 12
 
-            Text {
+            ColumnLayout {
+                Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: 6
-                text: TimerService.format(TimerService.timerRemaining)
-                color: Theme.foreground
-                font.family: Theme.fontFamily
-                font.pixelSize: 40
-                font.bold: true
+                spacing: 3
+
+                Text {
+                    text: TimerService.timerRunning ? "Contando…" : "Timer"
+                    color: Theme.accentCool
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 11
+                    font.bold: true
+                }
+
+                Text {
+                    text: TimerService.format(TimerService.timerRemaining)
+                    color: Theme.foreground
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 42
+                    font.bold: true
+                }
+
+                Rectangle {
+                    implicitWidth: 180
+                    implicitHeight: 5
+                    radius: 2.5
+                    color: Theme.surfaceHover
+
+                    Rectangle {
+                        width: Math.max(0, Math.min(1, TimerService.timerProgress)) * parent.width
+                        height: parent.height
+                        radius: parent.radius
+                        color: Theme.accentCool
+
+                        Behavior on width {
+                            NumberAnimation { duration: 250 }
+                        }
+                    }
+                }
             }
 
             Item { Layout.fillWidth: true }
 
-            SquareButton {
-                glyph: "\u{F0374}" // nf-md-minus (1 min)
-                onActivated: TimerService.timerAdjust(-1)
-            }
+            RowLayout {
+                Layout.alignment: Qt.AlignVCenter
+                spacing: 8
 
-            SquareButton {
-                glyph: "\u{F0415}" // nf-md-plus (1 min)
-                onActivated: TimerService.timerAdjust(1)
-            }
+                SquareButton {
+                    glyph: "\u{F0374}" // nf-md-minus (1 min)
+                    onActivated: TimerService.timerAdjust(-1)
+                }
 
-            Item { Layout.preferredWidth: 2 }
+                SquareButton {
+                    glyph: "\u{F0415}" // nf-md-plus (1 min)
+                    onActivated: TimerService.timerAdjust(1)
+                }
 
-            SquareButton {
-                glyph: TimerService.timerRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
-                primary: true
-                onActivated: TimerService.timerToggle()
-            }
+                Item { Layout.preferredWidth: 2 }
 
-            SquareButton {
-                glyph: "\u{F0709}" // nf-md-restart
-                onActivated: TimerService.timerReset()
-            }
-        }
+                SquareButton {
+                    glyph: TimerService.timerRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
+                    primary: true
+                    onActivated: TimerService.timerToggle()
+                }
 
-        // progresso
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.leftMargin: 6
-            Layout.rightMargin: 6
-            implicitHeight: 5
-            radius: 2.5
-            color: Theme.surfaceHover
-
-            Rectangle {
-                width: Math.max(0, Math.min(1, TimerService.timerProgress)) * parent.width
-                height: parent.height
-                radius: parent.radius
-                color: Theme.accentCool
-
-                Behavior on width {
-                    NumberAnimation { duration: 250 }
+                SquareButton {
+                    glyph: "\u{F0709}" // nf-md-restart
+                    onActivated: TimerService.timerReset()
                 }
             }
         }
@@ -373,36 +434,13 @@ ColumnLayout {
             Repeater {
                 model: [1, 3, 5, 10, 15, 30, 60]
 
-                delegate: Rectangle {
+                delegate: TimeChip {
                     required property var modelData
 
-                    readonly property bool current: TimerService.timerMinutes === modelData
-
                     anchors.verticalCenter: parent.verticalCenter
-                    implicitWidth: presetLabel.implicitWidth + 16
-                    implicitHeight: 24
-                    radius: 8
-                    color: current
-                           ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2)
-                           : Theme.surfaceHover
-                    border.width: 1
-                    border.color: current ? Theme.accent : "transparent"
-
-                    Text {
-                        id: presetLabel
-
-                        anchors.centerIn: parent
-                        text: modelData + "min"
-                        color: current ? Theme.accent : Theme.foregroundDim
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 10
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: TimerService.timerSet(modelData)
-                    }
+                    text: modelData + "min"
+                    current: TimerService.timerMinutes === modelData
+                    onActivated: TimerService.timerSet(modelData)
                 }
             }
         }
