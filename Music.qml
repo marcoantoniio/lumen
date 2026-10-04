@@ -17,17 +17,17 @@ Singleton {
     // ---------- player ativo ----------
     readonly property var player: {
         const players = Mpris.players.values;
-        const isDeezer = (p) => p.identity.toLowerCase().indexOf("deezer") >= 0;
+        const wanted = (p) => {
+            const id = p.identity.toLowerCase();
+            return id.indexOf("deezer") >= 0 || id.indexOf("spotify") >= 0;
+        };
         for (let i = 0; i < players.length; ++i)
-            if (players[i].isPlaying && isDeezer(players[i]))
+            if (players[i].isPlaying && wanted(players[i]))
                 return players[i];
         for (let i = 0; i < players.length; ++i)
-            if (players[i].isPlaying)
+            if (wanted(players[i]))
                 return players[i];
-        for (let i = 0; i < players.length; ++i)
-            if (isDeezer(players[i]))
-                return players[i];
-        return players.length > 0 ? players[0] : null;
+        return null;
     }
 
     readonly property bool active: player !== null
