@@ -38,8 +38,9 @@ PopupWindow {
                    ? anchorItem.y + anchorItem.height - 1
                    : (panelWindow ? panelWindow.height + Theme.barMargin : 0)
     implicitWidth: panelWidth
-    // Altura acompanha o conteúdo (compacto)
-    implicitHeight: Math.min(620, frame.implicitHeight)
+    // Altura fixa: redimensionar a janela ao abrir/fechar seções glicha no
+    // Wayland (o hover se perde e o painel some). Reserva o espaço das seções.
+    implicitHeight: 352
     color: "transparent"
     visible: Music.panelOpen && !ControlCenter.open && !Notifications.centerOpen
 
@@ -175,8 +176,9 @@ PopupWindow {
     Rectangle {
         id: frame
 
-        anchors.fill: parent
-        implicitHeight: column.implicitHeight + 24
+        width: parent.width
+        height: column.height + 24
+        implicitHeight: column.height + 24
         radius: Theme.radius
         topLeftRadius: 0
         topRightRadius: 0
@@ -207,10 +209,13 @@ PopupWindow {
             id: column
 
             anchors {
-                fill: parent
+                left: parent.left
+                right: parent.right
+                top: parent.top
                 margins: 12
             }
-            spacing: 10
+            height: implicitHeight
+            spacing: 8
 
             // ---- cabeçalho: capa com brilho + infos ----
             RowLayout {
@@ -218,8 +223,8 @@ PopupWindow {
                 spacing: 12
 
                 Item {
-                    Layout.preferredWidth: 96
-                    Layout.preferredHeight: 96
+                    implicitWidth: 80
+                    implicitHeight: 80
 
                     // brilho na cor do álbum
                     Shape {
@@ -269,9 +274,9 @@ PopupWindow {
 
                     Rectangle {
                         anchors.centerIn: parent
-                        width: 96
-                        height: 96
-                        radius: 14
+                        width: 80
+                        height: 80
+                        radius: 12
                         color: Theme.surfaceHover
                         clip: true
 
@@ -408,6 +413,7 @@ PopupWindow {
                 visible: panel.section === 0
 
                 Layout.fillWidth: true
+                Layout.preferredHeight: 114
                 spacing: 4
 
                 Text {
@@ -469,6 +475,7 @@ PopupWindow {
             // ---- mixer (aplicativos) ----
             ColumnLayout {
                 Layout.fillWidth: true
+                Layout.preferredHeight: 104
                 spacing: 4
                 visible: panel.section === 1 && Audio.streams.length > 0
 
@@ -560,6 +567,7 @@ PopupWindow {
             // ---- letras ----
             ColumnLayout {
                 Layout.fillWidth: true
+                Layout.preferredHeight: 127
                 spacing: 4
                 visible: panel.section === 2
 
