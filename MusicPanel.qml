@@ -367,39 +367,32 @@ PopupWindow {
                     id: mixSlider
 
                     Layout.alignment: Qt.AlignVCenter
-                    property real targetWidth: Music.section === 1 ? 110 : 0
-                    Layout.preferredWidth: targetWidth
-                    visible: targetWidth > 1
-                    opacity: Music.section === 1 ? 1 : 0
+                    // Uma única animação (0..1) guia largura, opacidade e visibilidade
+                    property real openness: Music.section === 1 ? 1 : 0
+                    Layout.preferredWidth: 110 * openness
+                    visible: openness > 0.01
+                    opacity: openness
                     value: Music.player && Music.player.volumeSupported ? Music.player.volume : 0
                     onMoved: (v) => {
                         if (Music.player && Music.player.volumeSupported)
                             Music.player.volume = v;
                     }
 
-                    Behavior on targetWidth {
-                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-                    }
-                    Behavior on opacity {
-                        NumberAnimation { duration: 160 }
+                    Behavior on openness {
+                        NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
                     }
                 }
 
                 Text {
                     Layout.alignment: Qt.AlignVCenter
-                    property real targetWidth: mixSlider.targetWidth > 1 ? 26 : 0
-                    Layout.preferredWidth: targetWidth
-                    visible: mixSlider.targetWidth > 1
-                    opacity: mixSlider.opacity
+                    Layout.preferredWidth: 26 * mixSlider.openness
+                    visible: mixSlider.openness > 0.01
+                    opacity: mixSlider.openness
                     text: Music.player && Music.player.volumeSupported
                           ? Math.round(Music.player.volume * 100) + "%" : ""
                     color: Theme.foregroundDim
                     font.family: Theme.fontFamily
                     font.pixelSize: 10
-
-                    Behavior on targetWidth {
-                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-                    }
                 }
 
                 Item { Layout.fillWidth: true }
