@@ -710,13 +710,41 @@ PopupWindow {
                     property real shiftX: 0
                     transform: Translate { x: dashPage.shiftX }
 
-                    Text {
+                    RowLayout {
                         Layout.fillWidth: true
-                        text: Greeting.text
-                        color: Theme.foreground
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 14
-                        font.bold: true
+                        spacing: 8
+
+                        Text {
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignVCenter
+                            text: Greeting.text
+                            color: Theme.foreground
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 14
+                            font.bold: true
+                        }
+
+                        SystemClock {
+                            id: dashClock
+                            precision: SystemClock.Minutes
+                        }
+
+                        Text {
+                            Layout.alignment: Qt.AlignVCenter
+                            text: Qt.formatDateTime(dashClock.date, "ddd d MMM")
+                            color: Theme.foregroundDim
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 12
+                        }
+
+                        Text {
+                            Layout.alignment: Qt.AlignVCenter
+                            text: Qt.formatDateTime(dashClock.date, "HH:mm")
+                            color: Theme.foreground
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 14
+                            font.bold: true
+                        }
                     }
 
                     RowLayout {
