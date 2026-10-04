@@ -45,6 +45,31 @@ PanelWindow {
         onTriggered: bar.expanded = false
     }
 
+    // Painel de música: abre no hover (com atraso) quando há música tocando
+    Timer {
+        id: musicOpenTimer
+        interval: 350
+        onTriggered: {
+            if (Music.active && !ControlCenter.open && !Notifications.centerOpen)
+                Music.panelOpen = true;
+        }
+    }
+
+    Timer {
+        id: musicCloseTimer
+        interval: 350
+        onTriggered: if (!Music.panelHovered) Music.panelOpen = false
+    }
+
+    Connections {
+        target: Music
+
+        function onPanelHoveredChanged() {
+            if (!Music.panelHovered && !barHover.hovered)
+                musicCloseTimer.restart();
+        }
+    }
+
     Rectangle {
         id: pill
 
@@ -74,7 +99,8 @@ PanelWindow {
         // e encosta no painel (cantos de baixo retos).
         readonly property real panelTargetWidth: ControlCenter.open
             ? Theme.controlCenterPanelWidth
-            : (Notifications.centerOpen ? Theme.notificationPanelWidth : 0)
+            : (Notifications.centerOpen ? Theme.notificationPanelWidth
+            : (Music.panelOpen ? Theme.musicPanelWidth : 0))
 
         property real animatedPanelWidth: panelTargetWidth
 
@@ -85,9 +111,14 @@ PanelWindow {
             }
         }
 
-        // Largura do item central (relógio ou indicador de gravação)
-        readonly property real centerWidth: Recorder.recording
-            ? recIndicator.implicitWidth
+        // Item central: volume (OSD) > gravação > música > relógio
+        readonly property string centerMode: Audio.osdVisible ? "volume"
+            : Recorder.recording ? "rec"
+            : (Music.playing ? "music" : "clock")
+
+        readonly property real centerWidth: centerMode === "volume" ? volumeOsd.implicitWidth
+            : centerMode === "rec" ? recIndicator.implicitWidth
+            : centerMode === "music" ? nowPlaying.implicitWidth
             : clockItem.implicitWidth
 
         width: Math.max(centerWidth + Theme.pillPadding * 2
@@ -111,8 +142,13 @@ PanelWindow {
                 if (barHover.hovered) {
                     collapseTimer.stop();
                     bar.expanded = true;
+                    musicCloseTimer.stop();
+                    if (Music.active && !ControlCenter.open && !Notifications.centerOpen)
+                        musicOpenTimer.start();
                 } else {
                     collapseTimer.start();
+                    musicOpenTimer.stop();
+                    musicCloseTimer.start();
                 }
             }
         }
@@ -145,17 +181,29 @@ PanelWindow {
             }
         }
 
-        // ---- centro: relógio (ou indicador de gravação) ----
+        // ---- centro: relógio, gravação, volume ou música ----
         Clock {
             id: clockItem
             anchors.centerIn: parent
-            visible: !Recorder.recording
+            visible: pill.centerMode === "clock"
         }
 
         RecordingIndicator {
             id: recIndicator
             anchors.centerIn: parent
-            visible: Recorder.recording
+            visible: pill.centerMode === "rec"
+        }
+
+        VolumeOsd {
+            id: volumeOsd
+            anchors.centerIn: parent
+            visible: pill.centerMode === "volume"
+        }
+
+        NowPlaying {
+            id: nowPlaying
+            anchors.centerIn: parent
+            visible: pill.centerMode === "music"
         }
 
         // ---- direita: botões de categoria ----
@@ -207,6 +255,11 @@ PanelWindow {
     }
 
     ControlCenterPanel {
+        panelWindow: bar
+        anchorItem: pill
+    }
+
+    MusicPanel {
         panelWindow: bar
         anchorItem: pill
     }

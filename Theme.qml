@@ -41,4 +41,5 @@ Singleton {
     // Larguras dos painéis (a ilha se adapta a elas quando abrem)
     readonly property int notificationPanelWidth: 380
     readonly property int controlCenterPanelWidth: 540
+    readonly property int musicPanelWidth: 420
 }
