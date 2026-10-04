@@ -16,6 +16,9 @@ PopupWindow {
 
     readonly property int panelWidth: Theme.musicPanelWidth
 
+    // Seção aberta: -1 nenhuma, 0 saída, 1 mixer, 2 letras
+    property int section: -1
+
     readonly property var sinks: {
         const out = [];
         const nodes = Pipewire.nodes.values;
@@ -35,11 +38,14 @@ PopupWindow {
                    ? anchorItem.y + anchorItem.height - 1
                    : (panelWindow ? panelWindow.height + Theme.barMargin : 0)
     implicitWidth: panelWidth
-    implicitHeight: Math.min(620, frame.implicitHeight)
+    // Altura fixa: abrir/fechar seções não pode redimensionar a janela
+    // (no Wayland o resize faz o hover se perder e o painel some)
+    implicitHeight: 430
     color: "transparent"
-    visible: Music.panelOpen && Music.playing && !ControlCenter.open && !Notifications.centerOpen
+    visible: Music.panelOpen && !ControlCenter.open && !Notifications.centerOpen
 
     onVisibleChanged: {
+        console.log("MP-DBG visible:", visible, "| panelOpen:", Music.panelOpen);
         // Qt.callLater evita binding loop no visible (bug de flicker)
         if (!visible && Music.panelOpen)
             Qt.callLater(() => Music.panelOpen = false);
@@ -88,6 +94,49 @@ PopupWindow {
             }
         }
         return best;
+    }
+
+    component SectionButton: Rectangle {
+        id: sectionButton
+
+        property string glyph: ""
+        property bool active: false
+
+        signal activated()
+
+        implicitWidth: 38
+        implicitHeight: 38
+        radius: 12
+        color: sectionButton.active
+               ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22)
+               : (sectionArea.containsMouse ? Theme.surfaceHover : "transparent")
+        border.width: 1
+        border.color: sectionButton.active ? Theme.accent
+                    : (sectionArea.containsMouse ? Theme.border : "transparent")
+
+        Behavior on color {
+            ColorAnimation { duration: 120 }
+        }
+        Behavior on border.color {
+            ColorAnimation { duration: 120 }
+        }
+
+        Text {
+            anchors.centerIn: parent
+            text: sectionButton.glyph
+            color: sectionButton.active ? Theme.accent : Theme.foreground
+            font.family: Theme.iconFont
+            font.pixelSize: 17
+        }
+
+        MouseArea {
+            id: sectionArea
+
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: sectionButton.activated()
+        }
     }
 
     component ControlButton: Rectangle {
@@ -299,18 +348,31 @@ PopupWindow {
                 }
             }
 
-            // ---- controles ----
+            // ---- controles (ícones das seções em volta, na mesma linha) ----
             RowLayout {
-                Layout.alignment: Qt.AlignHCenter
-                spacing: 14
+                Layout.fillWidth: true
+                Layout.preferredHeight: 46
+                spacing: 10
+
+                // mixer à esquerda do player
+                SectionButton {
+                    Layout.alignment: Qt.AlignVCenter
+                    glyph: "\u{F066A}" // nf-md-tune_vertical (mixer)
+                    active: panel.section === 1
+                    onActivated: panel.section = panel.section === 1 ? -1 : 1
+                }
+
+                Item { Layout.fillWidth: true }
 
                 ControlButton {
+                    Layout.alignment: Qt.AlignVCenter
                     glyph: "\u{F04AE}" // nf-md-skip_previous
                     glyphSize: 19
                     onActivated: if (Music.canPrev) Music.player.previous()
                 }
 
                 ControlButton {
+                    Layout.alignment: Qt.AlignVCenter
                     glyph: Music.playing ? "\u{F03E4}" : "\u{F040A}" // pause / play
                     buttonSize: 46
                     glyphSize: 21
@@ -318,14 +380,34 @@ PopupWindow {
                 }
 
                 ControlButton {
+                    Layout.alignment: Qt.AlignVCenter
                     glyph: "\u{F04AD}" // nf-md-skip_next
                     glyphSize: 19
                     onActivated: if (Music.canNext) Music.player.next()
+                }
+
+                Item { Layout.fillWidth: true }
+
+                // saída e letras à direita do player
+                SectionButton {
+                    Layout.alignment: Qt.AlignVCenter
+                    glyph: "\u{F04C3}" // nf-md-speaker (saída)
+                    active: panel.section === 0
+                    onActivated: panel.section = panel.section === 0 ? -1 : 0
+                }
+
+                SectionButton {
+                    Layout.alignment: Qt.AlignVCenter
+                    glyph: "\u{F021A}" // nf-md-text_box (letras)
+                    active: panel.section === 2
+                    onActivated: panel.section = panel.section === 2 ? -1 : 2
                 }
             }
 
             // ---- saída de áudio ----
             ColumnLayout {
+                visible: panel.section === 0
+
                 Layout.fillWidth: true
                 spacing: 4
 
@@ -389,7 +471,7 @@ PopupWindow {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 4
-                visible: Audio.streams.length > 0
+                visible: panel.section === 1 && Audio.streams.length > 0
 
                 Text {
                     text: "Mixer"
@@ -480,6 +562,7 @@ PopupWindow {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 4
+                visible: panel.section === 2
 
                 RowLayout {
                     Layout.fillWidth: true
