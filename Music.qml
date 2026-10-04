@@ -72,30 +72,58 @@ Singleton {
     property int section: -1
 
     // ---------- capa (baixada localmente p/ o ColorQuantizer) ----------
+    // Nome de arquivo único por capa (hash da URL): reutilizar o mesmo caminho
+    // faz o cache do Qt exibir a imagem antiga. O arquivo local serve só ao
+    // quantizador; a exibição usa a URL remota (sempre a da faixa atual).
     property string artFile: ""
-    property int _artSeq: 0
-    property string _pendingArt: ""
+    property string _wantArt: ""
+    property string _artInFlight: ""
+
+    function artPathFor(url) {
+        let h = 5381;
+        for (let i = 0; i < url.length; ++i)
+            h = ((h << 5) + h + url.charCodeAt(i)) | 0;
+        return Quickshell.stateDir + "/music_art_" + (h >>> 0).toString(16) + ".jpg";
+    }
 
     Process {
         id: artProc
 
         onExited: (code) => {
-            if (code === 0 && root._pendingArt !== "")
-                root.artFile = "file://" + root._pendingArt;
-            else
-                root.artFile = root.artUrl; // fallback: usa a URL remota
+            const url = root._artInFlight;
+            root._artInFlight = "";
+            if (url === "")
+                return;
+            if (url !== root._wantArt) {
+                // trocou de faixa durante o download: baixa a nova
+                root.startArtDownload();
+            } else if (code === 0) {
+                const path = root.artPathFor(url);
+                root.artFile = "file://" + path;
+                // mantém só a capa atual no diretório de estado
+                Quickshell.execDetached(["sh", "-c",
+                    "find '" + Quickshell.stateDir + "' -maxdepth 1 -name 'music_art_*.jpg' ! -name '"
+                    + path.substring(path.lastIndexOf("/") + 1) + "' -delete"]);
+            }
         }
     }
 
+    function startArtDownload() {
+        if (root._wantArt === "" || root._artInFlight !== "")
+            return;
+        root._artInFlight = root._wantArt;
+        artProc.command = ["curl", "-sL", "--max-time", "15",
+                           "-o", root.artPathFor(root._wantArt), root._wantArt];
+        artProc.running = true;
+    }
+
     function fetchArt() {
+        root._wantArt = root.artUrl;
         if (root.artUrl === "") {
             root.artFile = "";
             return;
         }
-        root._artSeq += 1;
-        root._pendingArt = Quickshell.stateDir + "/music_art_" + (root._artSeq % 2) + ".jpg";
-        artProc.command = ["curl", "-sL", "--max-time", "15", "-o", root._pendingArt, root.artUrl];
-        artProc.running = true;
+        root.startArtDownload();
     }
 
     // ---------- letras (lrclib.net) ----------

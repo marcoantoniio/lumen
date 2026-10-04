@@ -18,7 +18,7 @@ Row {
 
         Image {
             anchors.fill: parent
-            source: Music.artFile !== "" ? Music.artFile : Music.artUrl
+            source: Music.artUrl
             sourceSize: Qt.size(48, 48)
             smooth: true
             fillMode: Image.PreserveAspectCrop

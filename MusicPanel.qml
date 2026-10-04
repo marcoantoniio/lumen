@@ -279,7 +279,7 @@ PopupWindow {
 
                         Image {
                             anchors.fill: parent
-                            source: Music.artFile !== "" ? Music.artFile : Music.artUrl
+                            source: Music.artUrl
                             sourceSize: Qt.size(192, 192)
                             smooth: true
                             fillMode: Image.PreserveAspectCrop
