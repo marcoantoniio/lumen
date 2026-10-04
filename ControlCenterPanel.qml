@@ -933,8 +933,8 @@ PopupWindow {
                 }
 
                 FooterIcon {
-                    glyph: "\u{F01E7}" // globo/navegador
-                    onActivated: Quickshell.execDetached(["xdg-open", "https://duckduckgo.com"])
+                    glyph: "\u{F01E7}" // globo/navegador (SearXNG local)
+                    onActivated: Quickshell.execDetached(["xdg-open", "https://localhost"])
                 }
 
                 FooterIcon {
