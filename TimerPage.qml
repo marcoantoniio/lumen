@@ -1,5 +1,6 @@
-// Aba Timer do Control Center: Pomodoro (tempos configuráveis), Cronômetro e
+// Aba Timer do Control Center: Pomodoro (tempos ajustáveis), Cronômetro e
 // Timer (contagem regressiva) — sub-abas.
+// Layout compacto: ajustes e controles ao lado do tempo.
 
 import QtQuick
 import QtQuick.Layouts
@@ -9,26 +10,25 @@ ColumnLayout {
 
     property int mode: 0 // 0 = pomodoro, 1 = cronômetro, 2 = timer
 
-    spacing: 10
+    spacing: 8
 
+    // Botão redondo dos controles principais
     component TimerButton: Rectangle {
         id: button
 
         property string glyph: ""
-        property color glyphColor: Theme.foreground
-        property bool filled: false
+        property bool primary: false
 
         signal activated()
 
-        implicitWidth: 42
-        implicitHeight: 42
-        radius: 21
-        color: filled
-               ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22)
-               : (buttonArea.containsMouse ? Theme.surfaceHover : "transparent")
-        border.width: 1
-        border.color: filled ? Theme.accent
-                    : (buttonArea.containsMouse ? Theme.border : "transparent")
+        implicitWidth: 38
+        implicitHeight: 38
+        radius: 19
+        color: button.primary
+               ? (buttonArea.containsMouse ? Qt.lighter(Theme.accent, 1.1) : Theme.accent)
+               : (buttonArea.containsMouse
+                  ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2)
+                  : Theme.surfaceHover)
 
         Behavior on color {
             ColorAnimation { duration: 120 }
@@ -37,9 +37,9 @@ ColumnLayout {
         Text {
             anchors.centerIn: parent
             text: button.glyph
-            color: button.glyphColor
+            color: button.primary ? Theme.accentInk : Theme.foreground
             font.family: Theme.iconFont
-            font.pixelSize: 18
+            font.pixelSize: 16
         }
 
         MouseArea {
@@ -52,6 +52,7 @@ ColumnLayout {
         }
     }
 
+    // Botão pequeno de ajuste (− / +)
     component StepButton: Rectangle {
         id: step
 
@@ -59,19 +60,23 @@ ColumnLayout {
 
         signal activated()
 
-        implicitWidth: 22
-        implicitHeight: 22
-        radius: 11
-        color: stepArea.containsMouse ? Theme.surfaceHover : "transparent"
-        border.width: 1
-        border.color: stepArea.containsMouse ? Theme.border : "transparent"
+        implicitWidth: 30
+        implicitHeight: 30
+        radius: 15
+        color: stepArea.containsMouse
+               ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2)
+               : Theme.surfaceHover
+
+        Behavior on color {
+            ColorAnimation { duration: 120 }
+        }
 
         Text {
             anchors.centerIn: parent
             text: step.glyph
-            color: Theme.foreground
+            color: stepArea.containsMouse ? Theme.accent : Theme.foregroundDim
             font.family: Theme.iconFont
-            font.pixelSize: 11
+            font.pixelSize: 14
         }
 
         MouseArea {
@@ -119,96 +124,36 @@ ColumnLayout {
 
         Item { Layout.fillHeight: true }
 
-        // tempos configuráveis
+        // tempo + ajuste da fase + controles (uma linha)
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            spacing: 16
+            spacing: 10
 
-            Repeater {
-                model: [
-                    { label: "Foco", kind: "focus", minutes: TimerService.focusMinutes },
-                    { label: "Pausa", kind: "short", minutes: TimerService.shortBreakMinutes },
-                    { label: "Longa", kind: "long", minutes: TimerService.longBreakMinutes }
-                ]
-
-                delegate: RowLayout {
-                    required property var modelData
-
-                    spacing: 3
-
-                    Text {
-                        text: modelData.label
-                        color: Theme.foregroundDim
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 10
-                    }
-
-                    StepButton {
-                        glyph: "\u{F0374}" // nf-md-minus
-                        onActivated: TimerService.adjustPomodoro(modelData.kind, -5)
-                    }
-
-                    Text {
-                        Layout.preferredWidth: 36
-                        horizontalAlignment: Text.AlignHCenter
-                        text: modelData.minutes + "min"
-                        color: Theme.foreground
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 11
-                    }
-
-                    StepButton {
-                        glyph: "\u{F0415}" // nf-md-plus
-                        onActivated: TimerService.adjustPomodoro(modelData.kind, 5)
-                    }
-                }
+            StepButton {
+                glyph: "\u{F0374}" // nf-md-minus
+                onActivated: TimerService.pomoAdjust(-5)
             }
-        }
 
-        Text {
-            Layout.alignment: Qt.AlignHCenter
-            text: TimerService.pomoLabel
-            color: TimerService.pomoPhase === 1 ? Theme.accentAlt : Theme.accentCool
-            font.family: Theme.fontFamily
-            font.pixelSize: 13
-            font.bold: true
-        }
-
-        Text {
-            Layout.alignment: Qt.AlignHCenter
-            text: TimerService.format(TimerService.pomoRemaining)
-            color: Theme.foreground
-            font.family: Theme.fontFamily
-            font.pixelSize: 46
-            font.bold: true
-        }
-
-        Rectangle {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 280
-            implicitHeight: 6
-            radius: 3
-            color: Theme.surfaceHover
-
-            Rectangle {
-                width: Math.max(0, Math.min(1, TimerService.pomoProgress)) * parent.width
-                height: parent.height
-                radius: parent.radius
-                color: TimerService.pomoPhase === 1 ? Theme.accentAlt : Theme.accentCool
-
-                Behavior on width {
-                    NumberAnimation { duration: 250 }
-                }
+            Text {
+                Layout.preferredWidth: 128
+                horizontalAlignment: Text.AlignHCenter
+                text: TimerService.format(TimerService.pomoRemaining)
+                color: Theme.foreground
+                font.family: Theme.fontFamily
+                font.pixelSize: 40
+                font.bold: true
             }
-        }
 
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 12
+            StepButton {
+                glyph: "\u{F0415}" // nf-md-plus
+                onActivated: TimerService.pomoAdjust(5)
+            }
+
+            Item { Layout.preferredWidth: 4 }
 
             TimerButton {
                 glyph: TimerService.pomoRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
-                filled: true
+                primary: true
                 onActivated: TimerService.pomoToggle()
             }
 
@@ -223,12 +168,68 @@ ColumnLayout {
             }
         }
 
-        Text {
+        // progresso
+        Rectangle {
             Layout.alignment: Qt.AlignHCenter
-            text: TimerService.pomoCompleted + (TimerService.pomoCompleted === 1 ? " pomodoro concluído" : " pomodoros concluídos")
-            color: Theme.foregroundDim
-            font.family: Theme.fontFamily
-            font.pixelSize: 10
+            Layout.preferredWidth: 300
+            implicitHeight: 5
+            radius: 2.5
+            color: Theme.surfaceHover
+
+            Rectangle {
+                width: Math.max(0, Math.min(1, TimerService.pomoProgress)) * parent.width
+                height: parent.height
+                radius: parent.radius
+                color: TimerService.pomoPhase === 1 ? Theme.accentAlt : Theme.accentCool
+
+                Behavior on width {
+                    NumberAnimation { duration: 250 }
+                }
+            }
+        }
+
+        // status + durações (clique alterna os presets)
+        Row {
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 10
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: (TimerService.pomoPhase === 0 ? "Pronto" : TimerService.pomoLabel)
+                      + " · " + TimerService.pomoCompleted
+                      + (TimerService.pomoCompleted === 1 ? " concluído" : " concluídos")
+                color: Theme.foregroundDim
+                font.family: Theme.fontFamily
+                font.pixelSize: 10
+            }
+
+            Repeater {
+                model: [
+                    { label: "Foco", kind: "focus", minutes: TimerService.focusMinutes },
+                    { label: "Pausa", kind: "short", minutes: TimerService.shortBreakMinutes },
+                    { label: "Longa", kind: "long", minutes: TimerService.longBreakMinutes }
+                ]
+
+                delegate: Text {
+                    required property var modelData
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: modelData.label + " " + modelData.minutes + "min"
+                    color: chipArea.containsMouse ? Theme.accent : Theme.foregroundDim
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 10
+
+                    MouseArea {
+                        id: chipArea
+
+                        anchors.fill: parent
+                        anchors.margins: -3
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: TimerService.cyclePomodoro(modelData.kind)
+                    }
+                }
+            }
         }
 
         Item { Layout.fillHeight: true }
@@ -239,26 +240,29 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true
         visible: root.mode === 1
-        spacing: 14
+        spacing: 12
 
         Item { Layout.fillHeight: true }
 
-        Text {
-            Layout.alignment: Qt.AlignHCenter
-            text: TimerService.format(TimerService.swElapsed)
-            color: Theme.foreground
-            font.family: Theme.fontFamily
-            font.pixelSize: 46
-            font.bold: true
-        }
-
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            spacing: 12
+            spacing: 10
+
+            Text {
+                Layout.preferredWidth: 150
+                horizontalAlignment: Text.AlignHCenter
+                text: TimerService.format(TimerService.swElapsed)
+                color: Theme.foreground
+                font.family: Theme.fontFamily
+                font.pixelSize: 40
+                font.bold: true
+            }
+
+            Item { Layout.preferredWidth: 4 }
 
             TimerButton {
                 glyph: TimerService.swRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
-                filled: true
+                primary: true
                 onActivated: TimerService.swToggle()
             }
 
@@ -276,7 +280,7 @@ ColumnLayout {
         // voltas
         Flickable {
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.min(120, lapsCol.implicitHeight)
+            Layout.preferredHeight: Math.min(110, lapsCol.implicitHeight)
             contentHeight: lapsCol.implicitHeight
             clip: true
             interactive: contentHeight > height
@@ -330,29 +334,51 @@ ColumnLayout {
 
         Item { Layout.fillHeight: true }
 
-        Text {
+        // tempo + ajuste + controles (uma linha)
+        RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            text: TimerService.timerRunning ? "Contando…" : "Timer"
-            color: Theme.accentCool
-            font.family: Theme.fontFamily
-            font.pixelSize: 13
-            font.bold: true
+            spacing: 10
+
+            StepButton {
+                glyph: "\u{F0374}" // nf-md-minus (1 min)
+                onActivated: TimerService.timerAdjust(-1)
+            }
+
+            Text {
+                Layout.preferredWidth: 128
+                horizontalAlignment: Text.AlignHCenter
+                text: TimerService.format(TimerService.timerRemaining)
+                color: Theme.foreground
+                font.family: Theme.fontFamily
+                font.pixelSize: 40
+                font.bold: true
+            }
+
+            StepButton {
+                glyph: "\u{F0415}" // nf-md-plus (1 min)
+                onActivated: TimerService.timerAdjust(1)
+            }
+
+            Item { Layout.preferredWidth: 4 }
+
+            TimerButton {
+                glyph: TimerService.timerRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
+                primary: true
+                onActivated: TimerService.timerToggle()
+            }
+
+            TimerButton {
+                glyph: "\u{F0709}" // nf-md-restart
+                onActivated: TimerService.timerReset()
+            }
         }
 
-        Text {
-            Layout.alignment: Qt.AlignHCenter
-            text: TimerService.format(TimerService.timerRemaining)
-            color: Theme.foreground
-            font.family: Theme.fontFamily
-            font.pixelSize: 46
-            font.bold: true
-        }
-
+        // progresso
         Rectangle {
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 280
-            implicitHeight: 6
-            radius: 3
+            Layout.preferredWidth: 300
+            implicitHeight: 5
+            radius: 2.5
             color: Theme.surfaceHover
 
             Rectangle {
@@ -368,7 +394,7 @@ ColumnLayout {
         }
 
         // tempos rápidos
-        RowLayout {
+        Row {
             Layout.alignment: Qt.AlignHCenter
             spacing: 6
 
@@ -380,21 +406,20 @@ ColumnLayout {
 
                     readonly property bool current: TimerService.timerMinutes === modelData
 
-                    implicitWidth: presetLabel.implicitWidth + 18
-                    implicitHeight: 24
-                    radius: 12
+                    anchors.verticalCenter: parent.verticalCenter
+                    implicitWidth: presetLabel.implicitWidth + 16
+                    implicitHeight: 22
+                    radius: 11
                     color: current
-                           ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.18)
+                           ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2)
                            : Theme.surfaceHover
-                    border.width: 1
-                    border.color: current ? Theme.accent : "transparent"
 
                     Text {
                         id: presetLabel
 
                         anchors.centerIn: parent
                         text: modelData + "min"
-                        color: current ? Theme.accent : Theme.foreground
+                        color: current ? Theme.accent : Theme.foregroundDim
                         font.family: Theme.fontFamily
                         font.pixelSize: 10
                     }
@@ -405,32 +430,6 @@ ColumnLayout {
                         onClicked: TimerService.timerSet(modelData)
                     }
                 }
-            }
-        }
-
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 12
-
-            TimerButton {
-                glyph: TimerService.timerRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
-                filled: true
-                onActivated: TimerService.timerToggle()
-            }
-
-            TimerButton {
-                glyph: "\u{F0374}" // nf-md-minus (1 min)
-                onActivated: TimerService.timerAdjust(-1)
-            }
-
-            TimerButton {
-                glyph: "\u{F0415}" // nf-md-plus (1 min)
-                onActivated: TimerService.timerAdjust(1)
-            }
-
-            TimerButton {
-                glyph: "\u{F0709}" // nf-md-restart
-                onActivated: TimerService.timerReset()
             }
         }
 

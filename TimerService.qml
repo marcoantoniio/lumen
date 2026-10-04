@@ -14,16 +14,14 @@ import QtQuick
 Singleton {
     id: root
 
-    readonly property string sound: "/usr/share/sounds/freedesktop/stereo/complete.oga"
-
-    function playSound() {
-        Quickshell.execDetached(["pw-play", root.sound]);
-    }
-
     // ---------- pomodoro (tempos configuráveis) ----------
     property int focusMinutes: 25
     property int shortBreakMinutes: 5
     property int longBreakMinutes: 15
+
+    readonly property var focusPresets: [15, 20, 25, 30, 45, 60, 90]
+    readonly property var shortPresets: [3, 5, 10, 15]
+    readonly property var longPresets: [10, 15, 20, 30]
 
     property int pomoPhase: 0 // 0 = ocioso, 1 = foco, 2 = pausa, 3 = pausa longa
     property int pomoRemaining: focusMinutes * 60
@@ -41,13 +39,35 @@ Singleton {
         : pomoPhase === 3 ? "Pausa longa"
         : "Pronto"
 
-    function adjustPomodoro(kind, delta) {
-        if (kind === "focus")
-            root.focusMinutes = Math.max(5, Math.min(120, root.focusMinutes + delta));
-        else if (kind === "short")
+    // Ajusta a duração da fase atual (ocioso = foco)
+    function pomoAdjust(delta) {
+        if (root.pomoPhase === 2)
             root.shortBreakMinutes = Math.max(1, Math.min(60, root.shortBreakMinutes + delta));
-        else
+        else if (root.pomoPhase === 3)
             root.longBreakMinutes = Math.max(5, Math.min(90, root.longBreakMinutes + delta));
+        else
+            root.focusMinutes = Math.max(5, Math.min(120, root.focusMinutes + delta));
+
+        if (root.pomoPhase === 0)
+            root.pomoRemaining = root.focusMinutes * 60;
+    }
+
+    // Alterna entre os presets de duração
+    function cyclePomodoro(kind) {
+        function next(list, value) {
+            for (let i = 0; i < list.length; ++i) {
+                if (list[i] > value)
+                    return list[i];
+            }
+            return list[0];
+        }
+
+        if (kind === "focus")
+            root.focusMinutes = next(root.focusPresets, root.focusMinutes);
+        else if (kind === "short")
+            root.shortBreakMinutes = next(root.shortPresets, root.shortBreakMinutes);
+        else
+            root.longBreakMinutes = next(root.longPresets, root.longBreakMinutes);
 
         if (root.pomoPhase === 0)
             root.pomoRemaining = root.focusMinutes * 60;
@@ -70,13 +90,10 @@ Singleton {
     }
 
     function pomoSkip(): void {
-        root.advancePhase(false);
+        root.advancePhase();
     }
 
-    function advancePhase(playSound) {
-        if (playSound)
-            root.playSound();
-
+    function advancePhase() {
         let message = "";
         if (root.pomoPhase === 1) {
             root.pomoCompleted += 1;
@@ -100,7 +117,7 @@ Singleton {
             if (root.pomoRemaining > 0)
                 root.pomoRemaining -= 1;
             if (root.pomoRemaining <= 0)
-                root.advancePhase(true);
+                root.advancePhase();
         }
     }
 
@@ -141,7 +158,6 @@ Singleton {
                 root.timerRemaining -= 1;
             if (root.timerRemaining <= 0) {
                 root.timerRunning = false;
-                root.playSound();
                 root.showMessage("Tempo!");
             }
         }
