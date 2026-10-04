@@ -13,6 +13,7 @@ ColumnLayout {
 
     spacing: 10
 
+
     // Botão quadradinho com ícone
     component SquareButton: Rectangle {
         id: button
@@ -22,9 +23,9 @@ ColumnLayout {
 
         signal activated()
 
-        implicitWidth: 40
-        implicitHeight: 40
-        radius: 12
+        implicitWidth: 34
+        implicitHeight: 34
+        radius: 10
         color: button.primary
                ? (buttonArea.containsMouse ? Qt.lighter(Theme.accent, 1.08) : Theme.accent)
                : (buttonArea.containsMouse
@@ -47,7 +48,7 @@ ColumnLayout {
             text: button.glyph
             color: button.primary ? Theme.accentInk : Theme.foreground
             font.family: Theme.iconFont
-            font.pixelSize: 17
+            font.pixelSize: 14
         }
 
         MouseArea {
@@ -141,9 +142,11 @@ ColumnLayout {
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 12
+            spacing: 18
 
-            // bloco do tempo (label + tempo + barra, centralizados entre si)
+            Item { Layout.fillWidth: true }
+
+            // bloco do tempo (label + tempo + barra + chips, centralizados)
             ColumnLayout {
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: 6
@@ -151,7 +154,6 @@ ColumnLayout {
 
                 Text {
                     Layout.alignment: Qt.AlignHCenter
-                    Layout.preferredWidth: 180
                     horizontalAlignment: Text.AlignHCenter
                     text: (TimerService.pomoPhase === 0 ? "Pronto" : TimerService.pomoLabel)
                           + " · " + TimerService.pomoCompleted
@@ -164,6 +166,8 @@ ColumnLayout {
                 }
 
                 Text {
+                    id: pomoTime
+
                     Layout.alignment: Qt.AlignHCenter
                     text: TimerService.format(TimerService.pomoRemaining)
                     color: Theme.foreground
@@ -174,9 +178,9 @@ ColumnLayout {
 
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
-                    implicitWidth: 180
-                    implicitHeight: 5
-                    radius: 2.5
+                    implicitWidth: Math.max(120, pomoTime.implicitWidth)
+                    implicitHeight: 6
+                    radius: 3
                     color: Theme.surfaceHover
 
                     Rectangle {
@@ -190,14 +194,13 @@ ColumnLayout {
                         }
                     }
                 }
-            }
 
-            Item { Layout.fillWidth: true }
+            }
 
             // botões em coluna
             ColumnLayout {
                 Layout.alignment: Qt.AlignVCenter
-                spacing: 8
+                spacing: 5
 
                 SquareButton {
                     glyph: "\u{F0374}" // nf-md-minus
@@ -225,6 +228,8 @@ ColumnLayout {
                     onActivated: TimerService.pomoSkip()
                 }
             }
+
+            Item { Layout.fillWidth: true }
         }
 
         // durações (clique alterna os presets)
@@ -263,12 +268,13 @@ ColumnLayout {
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 12
+            spacing: 18
+
+            Item { Layout.fillWidth: true }
 
             Text {
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: 6
-                Layout.preferredWidth: 180
                 horizontalAlignment: Text.AlignHCenter
                 text: TimerService.format(TimerService.swElapsed)
                 color: Theme.foreground
@@ -277,11 +283,9 @@ ColumnLayout {
                 font.bold: true
             }
 
-            Item { Layout.fillWidth: true }
-
             ColumnLayout {
                 Layout.alignment: Qt.AlignVCenter
-                spacing: 8
+                spacing: 5
 
                 SquareButton {
                     glyph: TimerService.swRunning ? "\u{F03E4}" : "\u{F040A}" // pause / play
@@ -299,6 +303,8 @@ ColumnLayout {
                     onActivated: TimerService.swReset()
                 }
             }
+
+            Item { Layout.fillWidth: true }
         }
 
         // voltas
@@ -359,8 +365,8 @@ ColumnLayout {
         Item { Layout.fillHeight: true }
 
         RowLayout {
-            Layout.fillWidth: true
-            spacing: 12
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 18
 
             ColumnLayout {
                 Layout.alignment: Qt.AlignVCenter
@@ -369,7 +375,6 @@ ColumnLayout {
 
                 Text {
                     Layout.alignment: Qt.AlignHCenter
-                    Layout.preferredWidth: 180
                     horizontalAlignment: Text.AlignHCenter
                     text: TimerService.timerRunning ? "Contando…" : "Timer"
                     color: Theme.accentCool
@@ -379,6 +384,8 @@ ColumnLayout {
                 }
 
                 Text {
+                    id: timerTime
+
                     Layout.alignment: Qt.AlignHCenter
                     text: TimerService.format(TimerService.timerRemaining)
                     color: Theme.foreground
@@ -389,9 +396,9 @@ ColumnLayout {
 
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
-                    implicitWidth: 180
-                    implicitHeight: 5
-                    radius: 2.5
+                    implicitWidth: Math.max(120, pomoTime.implicitWidth)
+                    implicitHeight: 6
+                    radius: 3
                     color: Theme.surfaceHover
 
                     Rectangle {
@@ -405,13 +412,12 @@ ColumnLayout {
                         }
                     }
                 }
-            }
 
-            Item { Layout.fillWidth: true }
+            }
 
             ColumnLayout {
                 Layout.alignment: Qt.AlignVCenter
-                spacing: 8
+                spacing: 5
 
                 SquareButton {
                     glyph: "\u{F0374}" // nf-md-minus (1 min)
@@ -434,6 +440,8 @@ ColumnLayout {
                     onActivated: TimerService.timerReset()
                 }
             }
+
+            Item { Layout.fillWidth: true }
         }
 
         // tempos rápidos

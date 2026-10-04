@@ -161,7 +161,9 @@ PopupWindow {
                    ? anchorItem.y + anchorItem.height - 1
                    : (panelWindow ? panelWindow.height + Theme.barMargin : 0)
     implicitWidth: panelWidth
-    implicitHeight: 464
+    // Altura dinâmica: se ajusta ao conteúdo da aba atual (moldura fixa = 132px)
+    readonly property var currentPage: pages.itemAt(ControlCenter.tab)
+    implicitHeight: Math.min(464, 132 + (currentPage ? currentPage.implicitHeight : 0))
     color: "transparent"
     visible: ControlCenter.open
 
@@ -400,6 +402,8 @@ PopupWindow {
 
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                Layout.minimumHeight: 0
+                Layout.preferredHeight: currentPage ? currentPage.implicitHeight : 0
                 currentIndex: ControlCenter.tab
 
                 // ================= PAGE 0: CONTROL CENTER =================
