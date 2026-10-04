@@ -67,7 +67,7 @@ PopupWindow {
     ColorQuantizer {
         id: quant
 
-        source: Music.artFile !== "" ? Music.artFile : Music.artUrl
+        source: Music.artFile
         depth: 2
         rescaleSize: 64
     }
@@ -304,7 +304,7 @@ PopupWindow {
                 spacing: 14
 
                 ControlButton {
-                    glyph: "\u{F0459}" // nf-md-skip-previous
+                    glyph: "\u{F04AE}" // nf-md-skip_previous
                     glyphSize: 19
                     onActivated: if (Music.canPrev) Music.player.previous()
                 }
@@ -317,7 +317,7 @@ PopupWindow {
                 }
 
                 ControlButton {
-                    glyph: "\u{F045C}" // nf-md-skip-next
+                    glyph: "\u{F04AD}" // nf-md-skip_next
                     glyphSize: 19
                     onActivated: if (Music.canNext) Music.player.next()
                 }

@@ -100,7 +100,8 @@ PanelWindow {
         readonly property real panelTargetWidth: ControlCenter.open
             ? Theme.controlCenterPanelWidth
             : (Notifications.centerOpen ? Theme.notificationPanelWidth
-            : (Music.panelOpen ? Theme.musicPanelWidth : 0))
+            : (Music.panelOpen ? Theme.musicPanelWidth
+            : (Webcam.open ? Theme.cameraPanelWidth : 0)))
 
         property real animatedPanelWidth: panelTargetWidth
 
@@ -111,13 +112,15 @@ PanelWindow {
             }
         }
 
-        // Item central: volume (OSD) > gravação > música > relógio
+        // Item central: volume (OSD) > gravação > timer > música > relógio
         readonly property string centerMode: Audio.osdVisible ? "volume"
             : Recorder.recording ? "rec"
+            : TimerService.messageVisible ? "timer"
             : (Music.playing ? "music" : "clock")
 
         readonly property real centerWidth: centerMode === "volume" ? volumeOsd.implicitWidth
             : centerMode === "rec" ? recIndicator.implicitWidth
+            : centerMode === "timer" ? timerNotice.implicitWidth
             : centerMode === "music" ? nowPlaying.implicitWidth
             : clockItem.implicitWidth
 
@@ -143,7 +146,7 @@ PanelWindow {
                     collapseTimer.stop();
                     bar.expanded = true;
                     musicCloseTimer.stop();
-                    if (Music.active && !ControlCenter.open && !Notifications.centerOpen)
+                    if (Music.active && !ControlCenter.open && !Notifications.centerOpen && !Webcam.open)
                         musicOpenTimer.start();
                 } else {
                     collapseTimer.start();
@@ -206,6 +209,12 @@ PanelWindow {
             visible: pill.centerMode === "music"
         }
 
+        TimerNotice {
+            id: timerNotice
+            anchors.centerIn: parent
+            visible: pill.centerMode === "timer"
+        }
+
         // ---- direita: botões de categoria ----
         Item {
             id: rightWrap
@@ -260,6 +269,11 @@ PanelWindow {
     }
 
     MusicPanel {
+        panelWindow: bar
+        anchorItem: pill
+    }
+
+    CameraPanel {
         panelWindow: bar
         anchorItem: pill
     }

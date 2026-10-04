@@ -188,6 +188,50 @@ PopupWindow {
         return players.length > 0 ? players[0] : null;
     }
 
+    // Animação de troca de aba: fade + zoom leve na página nova
+    property int _lastTab: 0
+    property Item _animItem: null
+
+    function animatePage() {
+        const item = pages.itemAt(ControlCenter.tab);
+        if (!item)
+            return;
+        panel._animItem = item;
+        item.opacity = 0;
+        item.scale = 0.98;
+        fadeIn.restart();
+        popIn.restart();
+    }
+
+    NumberAnimation {
+        id: fadeIn
+
+        target: panel._animItem
+        property: "opacity"
+        to: 1
+        duration: 170
+        easing.type: Easing.OutCubic
+    }
+
+    NumberAnimation {
+        id: popIn
+
+        target: panel._animItem
+        property: "scale"
+        to: 1
+        duration: 170
+        easing.type: Easing.OutCubic
+    }
+
+    Connections {
+        target: ControlCenter
+
+        function onTabChanged() {
+            panel._lastTab = ControlCenter.tab;
+            panel.animatePage();
+        }
+    }
+
     // ---- dashboard ----
     Process {
         id: sysProc
@@ -320,6 +364,12 @@ PopupWindow {
                     onActivated: ControlCenter.tab = 2
                 }
 
+                PanelTab {
+                    label: "Timer"
+                    selected: ControlCenter.tab === 3
+                    onActivated: ControlCenter.tab = 3
+                }
+
                 Item { Layout.fillWidth: true }
 
                 Text {
@@ -346,6 +396,8 @@ PopupWindow {
 
             // ================= PÁGINAS (StackLayout troca sem bug de altura) =================
             StackLayout {
+                id: pages
+
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 currentIndex: ControlCenter.tab
@@ -430,6 +482,14 @@ PopupWindow {
                             label: "Gravador"
                             active: Recorder.recording
                             onActivated: Recorder.toggle()
+                        }
+
+                        QuickToggle {
+                            Layout.fillWidth: true
+                            glyph: "\u{F05A0}" // nf-md-webcam
+                            label: "Câmera"
+                            active: Webcam.open
+                            onActivated: Webcam.toggle()
                         }
                     }
 
@@ -789,6 +849,12 @@ PopupWindow {
                     }
                 }
             }
+
+                // ================= PAGE 3: TIMER =================
+                TimerPage {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                }
             }
 
             Rectangle {

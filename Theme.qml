@@ -42,4 +42,5 @@ Singleton {
     readonly property int notificationPanelWidth: 380
     readonly property int controlCenterPanelWidth: 540
     readonly property int musicPanelWidth: 420
+    readonly property int cameraPanelWidth: 440
 }

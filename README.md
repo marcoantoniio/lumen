@@ -22,6 +22,10 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
   animação** (largura + slide + fade) e revela os elementos laterais.
 - **Gravando**: a ilha vira o indicador **REC** — bolinha vermelha pulsando,
   tempo de gravação e botões de pausar/continuar e parar.
+- **Volume**: ao mudar o volume/mudo (teclas de mídia, apps), a ilha mostra um
+  **OSD** com barra e porcentagem (some sozinho).
+- **Música**: quando há música tocando, a ilha mostra a **capa** + barrinhas
+  animadas + título.
 - **A ilha se adapta aos painéis**: quando um painel abre, ela cresce até a
   largura dele e se funde ao painel (sem vão nem linha divisória); ao fechar,
   volta ao normal — tudo animado.
@@ -39,10 +43,16 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
 - Abas: **Control Center | Dashboard | Clipboard & Notes** (altura fixa, sem
   "pular" ao trocar de aba).
 - **Control Center**: Quick Settings (Rede, Não Perturbe, Night Light,
-  Caffeine, Bluetooth, **Gravador** — grava a tela e acende durante a gravação)
-  + Sessão (Bloquear, Sair, Reiniciar,
+  Caffeine, Bluetooth, **Gravador** — grava a tela e acende durante a gravação,
+  **Câmera** — preview da webcam) + Sessão (Bloquear, Sair, Reiniciar,
   Desligar); **Levels** com sliders de Saída/Microfone/Brilho, mute no ícone e
   **seletor de dispositivos de áudio** na setinha; linha de mídia (MPRIS).
+- **Música**: passando o mouse na ilha (com música tocando) abre um painel com
+  capa e **brilho da cor do álbum**, controles (anterior/play/próxima), seek,
+  **saída de áudio**, **mixer por aplicativo** e **letras** (lrclib, com
+  sincronia e linha atual destacada).
+- **Timer**: aba com **Pomodoro** (foco/pausas, som e aviso na ilha) e
+  **Cronômetro** (com voltas). Continua contando com o painel fechado.
 - **Dashboard**: saudação ("Bom dia/Boa tarde/Boa noite, Nome"), **calendário**
   com semana atual + mini-mês, **clima** com previsão horária (umidade, vento,
   chuva) e **Sistema** com CPU, RAM, GPU, temperatura, disco e uptime — tudo
@@ -85,6 +95,8 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
 | Klipper (KDE) | histórico do clipboard |
 | `gammastep` | botão Night Light |
 | `network-manager-applet` | ícone de rede na bandeja (`nm-applet --indicator`, iniciar junto com a sessão) |
+| `qt6-multimedia` | preview da câmera (botão Câmera) |
+| `curl` | letras (lrclib) e capa da música |
 | `gpu-screen-recorder` | gravação de todas as telas (botão Gravador; usa NVENC/GPU e áudio do sistema + microfone) |
 
 ---
@@ -168,6 +180,12 @@ qs -c lumen ipc call clipboard copy "texto"
 qs -c lumen ipc call recorder start           # grava todas as telas (~/Videos)
 qs -c lumen ipc call recorder pause           # pausa/retoma a gravação
 qs -c lumen ipc call recorder stop            # para e salva o arquivo
+qs -c lumen ipc call music status             # música atual (MPRIS)
+qs -c lumen ipc call music toggle             # play/pause
+qs -c lumen ipc call audio setVolume 0.5      # volume da saída (mostra o OSD)
+qs -c lumen ipc call timer pomodoro           # inicia/pausa o pomodoro
+qs -c lumen ipc call timer status             # estado do pomodoro/cronômetro
+qs -c lumen ipc call camera toggle            # preview da câmera
 ```
 
 ---
