@@ -364,29 +364,45 @@ PopupWindow {
                 }
 
                 LevelSlider {
+                    id: mixSlider
+
                     Layout.alignment: Qt.AlignVCenter
-                    Layout.fillWidth: true
-                    Layout.preferredWidth: 140
-                    visible: Music.section === 1
+                    property real targetWidth: Music.section === 1 ? 140 : 0
+                    Layout.preferredWidth: targetWidth
+                    visible: targetWidth > 1
+                    opacity: Music.section === 1 ? 1 : 0
                     value: Music.player && Music.player.volumeSupported ? Music.player.volume : 0
                     onMoved: (v) => {
                         if (Music.player && Music.player.volumeSupported)
                             Music.player.volume = v;
                     }
+
+                    Behavior on targetWidth {
+                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                    }
+                    Behavior on opacity {
+                        NumberAnimation { duration: 160 }
+                    }
                 }
 
                 Text {
                     Layout.alignment: Qt.AlignVCenter
-                    Layout.preferredWidth: 26
-                    visible: Music.section === 1
+                    property real targetWidth: mixSlider.targetWidth > 1 ? 26 : 0
+                    Layout.preferredWidth: targetWidth
+                    visible: mixSlider.targetWidth > 1
+                    opacity: mixSlider.opacity
                     text: Music.player && Music.player.volumeSupported
                           ? Math.round(Music.player.volume * 100) + "%" : ""
                     color: Theme.foregroundDim
                     font.family: Theme.fontFamily
                     font.pixelSize: 10
+
+                    Behavior on targetWidth {
+                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                    }
                 }
 
-                Item { Layout.fillWidth: true; visible: Music.section !== 1 }
+                Item { Layout.fillWidth: true }
 
                 ControlButton {
                     Layout.alignment: Qt.AlignVCenter

@@ -279,5 +279,6 @@ Singleton {
         }
         function getLyricsStatus(): string { return root.lyricsStatus; }
         function section(n: int): void { root.section = n; }
+        function panel(open: bool): void { root.panelOpen = open; }
     }
 }
