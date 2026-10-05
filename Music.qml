@@ -257,15 +257,27 @@ Singleton {
         root.setLyricsNotFound();
     }
 
-    // ---------- fila/playlist (faixas do álbum da faixa atual) ----------
-    // O Deezer não expõe a fila via MPRIS; montamos a lista pela API pública
-    // do álbum da faixa atual: anteriores = já tocaram, atual = highlight,
-    // seguintes = vão tocar. Clicar toca no Deezer (OpenUri).
+    // ---------- fila/playlist (a sua playlist tocando, ou o álbum de fallback) ----------
+    // O Deezer não expõe a fila via MPRIS. Baixamos as playlists públicas do
+    // usuário (Theme.deezerUserId) e procuramos a faixa atual em cada uma: se
+    // achar, mostramos a playlist de verdade (anteriores = já tocaram, atual =
+    // highlight, seguintes = vão tocar). Se não achar, cai no álbum da faixa.
+    // Clicar toca no Deezer (OpenUri).
     property var queueTracks: []
     property int queueIndex: -1
     property bool queueLoading: false
     property string queueStatus: "" // "", "ok", "notrack", "error"
+    property string queueSourceKind: "" // "playlist" | "album" | ""
+    property string queueSourceTitle: ""
     property string _queueAlbumId: ""
+    property string _lastQueuePlaylistId: ""
+
+    // playlists do usuário (baixadas uma vez, em background)
+    property var userPlaylists: []
+    property var playlistTracks: ({})
+    property bool playlistsLoading: false
+    property bool playlistsLoaded: false
+    property int _playlistFetchIndex: -1
 
     function currentTrackUrl() {
         const md = root.player ? root.player.metadata : null;
@@ -277,15 +289,130 @@ Singleton {
         return m ? m[1] : "";
     }
 
-    function fetchQueue() {
+    function loadUserPlaylists() {
+        if (root.playlistsLoading || root.playlistsLoaded || Theme.deezerUserId === "")
+            return;
+        root.playlistsLoading = true;
+        playlistsProc.command = ["curl", "-s", "--max-time", "10",
+                                 "https://api.deezer.com/user/" + Theme.deezerUserId
+                                 + "/playlists?limit=100"];
+        playlistsProc.running = true;
+    }
+
+    function parseUserPlaylists(text) {
+        let data = null;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            data = null;
+        }
+        const list = data && data.data ? data.data : null;
+        if (!list) {
+            root.playlistsLoading = false;
+            return;
+        }
+        const out = [];
+        for (let i = 0; i < list.length; ++i)
+            out.push({ id: String(list[i].id), title: list[i].title || "" });
+        root.userPlaylists = out;
+        root._playlistFetchIndex = 0;
+        root.fetchNextPlaylistTracks();
+    }
+
+    function fetchNextPlaylistTracks() {
+        const i = root._playlistFetchIndex;
+        if (i < 0 || i >= root.userPlaylists.length) {
+            root._playlistFetchIndex = -1;
+            root.playlistsLoading = false;
+            root.playlistsLoaded = true;
+            root.refreshQueueSource();
+            return;
+        }
+        playlistProc.command = ["curl", "-s", "--max-time", "15",
+                                "https://api.deezer.com/playlist/"
+                                + root.userPlaylists[i].id + "/tracks?limit=1000"];
+        playlistProc.running = true;
+    }
+
+    function parsePlaylistTracks(text) {
+        const i = root._playlistFetchIndex;
+        if (i < 0 || i >= root.userPlaylists.length)
+            return;
+        let data = null;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            data = null;
+        }
+        const list = data && data.data ? data.data : [];
+        const out = [];
+        for (let k = 0; k < list.length; ++k)
+            out.push({
+                id: String(list[k].id),
+                title: list[k].title || "",
+                duration: list[k].duration || 0,
+                url: "https://deezer.com/track/" + list[k].id
+            });
+        root.playlistTracks[root.userPlaylists[i].id] = out;
+        root._playlistFetchIndex = i + 1;
+        playlistGap.restart();
+    }
+
+    function playlistTitle(pid) {
+        for (let i = 0; i < root.userPlaylists.length; ++i)
+            if (root.userPlaylists[i].id === pid)
+                return root.userPlaylists[i].title;
+        return "";
+    }
+
+    // escolhe a fonte da fila: playlist do usuário com a faixa, senão o álbum
+    function refreshQueueSource() {
         const id = root.trackIdFromUrl(root.currentTrackUrl());
         if (id === "") {
             root.queueTracks = [];
             root.queueIndex = -1;
             root._queueAlbumId = "";
+            root._lastQueuePlaylistId = "";
+            root.queueSourceKind = "";
+            root.queueSourceTitle = "";
             root.queueStatus = root.title === "" ? "" : "notrack";
             return;
         }
+        if (root.playlistsLoaded) {
+            // continuidade primeiro (faixas seguidas da mesma playlist)
+            const candidates = [];
+            if (root._lastQueuePlaylistId !== "")
+                candidates.push(root._lastQueuePlaylistId);
+            for (let i = 0; i < root.userPlaylists.length; ++i) {
+                const pid = root.userPlaylists[i].id;
+                if (pid !== root._lastQueuePlaylistId)
+                    candidates.push(pid);
+            }
+            for (let c = 0; c < candidates.length; ++c) {
+                const pid = candidates[c];
+                const list = root.playlistTracks[pid];
+                if (!list)
+                    continue;
+                for (let k = 0; k < list.length; ++k) {
+                    if (list[k].id === id) {
+                        root.queueTracks = list;
+                        root.queueIndex = k;
+                        root.queueSourceKind = "playlist";
+                        root.queueSourceTitle = root.playlistTitle(pid);
+                        root.queueStatus = "ok";
+                        root.queueLoading = false;
+                        root._queueAlbumId = "";
+                        root._lastQueuePlaylistId = pid;
+                        return;
+                    }
+                }
+            }
+        }
+        root._lastQueuePlaylistId = "";
+        root.fetchAlbumQueue(id);
+    }
+
+    function fetchAlbumQueue(id) {
         root.queueLoading = true;
         root.queueStatus = "";
         queueTrackProc.command = ["curl", "-s", "--max-time", "10",
@@ -300,11 +427,14 @@ Singleton {
         } catch (e) {
             data = null;
         }
-        const albumId = data && data.album && data.album.id ? String(data.album.id) : "";
+        const album = data && data.album ? data.album : null;
+        const albumId = album && album.id ? String(album.id) : "";
         if (albumId === "") {
             root.queueLoading = false;
             root.queueTracks = [];
             root.queueIndex = -1;
+            root.queueSourceKind = "";
+            root.queueSourceTitle = "";
             root.queueStatus = "error";
             return;
         }
@@ -314,6 +444,8 @@ Singleton {
             return;
         }
         root._queueAlbumId = albumId;
+        root.queueSourceKind = "album";
+        root.queueSourceTitle = album.title || "";
         queueAlbumProc.command = ["curl", "-s", "--max-time", "10",
                                   "https://api.deezer.com/album/" + albumId];
         queueAlbumProc.running = true;
@@ -345,6 +477,9 @@ Singleton {
         }
         root.queueTracks = out;
         root.queueStatus = "ok";
+        root.queueSourceKind = "album";
+        if (data.title)
+            root.queueSourceTitle = data.title;
         root.updateQueueIndex();
     }
 
@@ -368,6 +503,16 @@ Singleton {
     }
 
     Process {
+        id: playlistsProc
+        stdout: StdioCollector { onStreamFinished: root.parseUserPlaylists(text) }
+    }
+
+    Process {
+        id: playlistProc
+        stdout: StdioCollector { onStreamFinished: root.parsePlaylistTracks(text) }
+    }
+
+    Process {
         id: queueTrackProc
         stdout: StdioCollector { onStreamFinished: root.parseQueueTrack(text) }
     }
@@ -380,10 +525,22 @@ Singleton {
     Timer {
         id: queueDebounce
         interval: 400
-        onTriggered: root.fetchQueue()
+        onTriggered: root.refreshQueueSource()
     }
 
-    onSectionChanged: if (section === 3 && queueTracks.length === 0 && title !== "") fetchQueue()
+    Timer {
+        id: playlistGap
+        interval: 120
+        onTriggered: root.fetchNextPlaylistTracks()
+    }
+
+    onSectionChanged: {
+        if (section !== 3)
+            return;
+        loadUserPlaylists();
+        if (queueTracks.length === 0 && title !== "")
+            refreshQueueSource();
+    }
 
     // ---------- troca de faixa ----------
     function refreshTrack() {
@@ -415,7 +572,11 @@ Singleton {
         function onPositionChanged() { root.livePosition = root.position; }
     }
 
-    Component.onCompleted: if (root.title !== "") root.refreshTrack()
+    Component.onCompleted: {
+        root.loadUserPlaylists();
+        if (root.title !== "")
+            root.refreshTrack();
+    }
 
     // ---------- IPC ----------
     IpcHandler {
@@ -435,7 +596,8 @@ Singleton {
             return root.artist + " - " + root.title + (root.playing ? " (tocando)" : " (pausado)");
         }
         function getLyricsStatus(): string { return root.lyricsStatus; }
-        function getQueue(): string { return root.queueStatus + " " + root.queueIndex + "/" + root.queueTracks.length; }
+        function getQueue(): string { return root.queueSourceKind + " " + root.queueIndex + "/" + root.queueTracks.length; }
+        function getPlaylists(): string { return (root.playlistsLoaded ? "ok" : (root.playlistsLoading ? "carregando" : "nao")) + " " + root.userPlaylists.length + "/" + Object.keys(root.playlistTracks).length; }
         function section(n: int): void { root.section = n; }
         function panel(open: bool): void { root.panelOpen = open; }
     }

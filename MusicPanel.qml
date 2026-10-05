@@ -668,7 +668,11 @@ PopupWindow {
 
                     Text {
                         Layout.fillWidth: true
-                        text: "Playlist" + (Music.album !== "" ? " · " + Music.album : "")
+                        text: Music.queueSourceKind === "playlist"
+                              ? "Playlist · " + Music.queueSourceTitle
+                              : (Music.queueSourceKind === "album"
+                                 ? "Álbum · " + Music.queueSourceTitle
+                                 : "Playlist")
                         color: Theme.foregroundDim
                         font.family: Theme.fontFamily
                         font.pixelSize: 10
