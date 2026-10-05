@@ -1,0 +1,6 @@
+# Nunca versionar capturas de tela / imagens
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
