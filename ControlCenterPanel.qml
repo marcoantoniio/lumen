@@ -565,199 +565,290 @@ PopupWindow {
                     Layout.alignment: Qt.AlignTop
                     spacing: 8
 
-                    Text {
-                        visible: !ControlCenter.mixerOpen
-                        text: "Levels"
-                        color: Theme.foregroundDim
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 11
-                    }
-
-                    LevelRow {
-                        id: sinkRow
+                    // ---- visões: níveis <-> mixer (transição animada) ----
+                    Item {
+                        id: mixViews
 
                         Layout.fillWidth: true
-                        visible: !ControlCenter.mixerOpen
-                        glyph: panel.sink && panel.sink.audio && panel.sink.audio.muted ? "\u{F0581}" : "\u{F057E}" // volume-off / volume-high
-                        title: "Saída · " + Math.round((panel.sink && panel.sink.audio ? panel.sink.audio.volume : 0) * 100) + "%"
-                        subtitle: panel.sink ? (panel.sink.description || panel.sink.name) : "sem saída de áudio"
-                        value: panel.sink && panel.sink.audio ? panel.sink.audio.volume : 0
-                        muted: panel.sink && panel.sink.audio ? panel.sink.audio.muted : false
-                        onMoved: (v) => {
-                            if (panel.sink && panel.sink.audio)
-                                panel.sink.audio.volume = v;
-                        }
-                        onIconClicked: {
-                            if (panel.sink && panel.sink.audio)
-                                panel.sink.audio.muted = !panel.sink.audio.muted;
-                        }
-                        onArrowClicked: {
-                            if (panel.deviceMenuOpen && panel.deviceMenuKind === "sink") {
-                                panel.deviceMenuOpen = false;
-                            } else {
-                                panel.deviceMenuAnchor = sinkRow.arrowItem;
-                                panel.deviceMenuKind = "sink";
-                                panel.deviceMenuOpen = true;
-                            }
-                        }
-                    }
+                        implicitHeight: Math.max(levelsView.implicitHeight, mixerView.implicitHeight)
+                        clip: true
 
-                    LevelRow {
-                        id: sourceRow
+                        states: State {
+                            name: "mixer"
+                            when: ControlCenter.mixerOpen
 
-                        Layout.fillWidth: true
-                        visible: !ControlCenter.mixerOpen
-                        glyph: panel.source && panel.source.audio && panel.source.audio.muted ? "\u{F036D}" : "\u{F036C}" // mic-off / mic
-                        title: "Microfone · " + Math.round((panel.source && panel.source.audio ? panel.source.audio.volume : 0) * 100) + "%"
-                        subtitle: panel.source ? (panel.source.description || panel.source.name) : "sem microfone"
-                        value: panel.source && panel.source.audio ? panel.source.audio.volume : 0
-                        muted: panel.source && panel.source.audio ? panel.source.audio.muted : false
-                        onMoved: (v) => {
-                            if (panel.source && panel.source.audio)
-                                panel.source.audio.volume = v;
-                        }
-                        onIconClicked: {
-                            if (panel.source && panel.source.audio)
-                                panel.source.audio.muted = !panel.source.audio.muted;
-                        }
-                        onArrowClicked: {
-                            if (panel.deviceMenuOpen && panel.deviceMenuKind === "source") {
-                                panel.deviceMenuOpen = false;
-                            } else {
-                                panel.deviceMenuAnchor = sourceRow.arrowItem;
-                                panel.deviceMenuKind = "source";
-                                panel.deviceMenuOpen = true;
-                            }
-                        }
-                    }
+                            PropertyChanges {
+                                target: levelsView
 
-                    LevelRow {
-                        Layout.fillWidth: true
-                        visible: !ControlCenter.mixerOpen
-                        glyph: "\u{F0599}" // nf-md-brightness-6
-                        title: "Brilho · " + Brightness.value + "%"
-                        subtitle: Brightness.available
-                                  ? ("DDC/CI · " + Brightness.displayName)
-                                  : "sem DDC/CI neste sistema"
-                        value: Brightness.available ? Brightness.value / Brightness.maxValue : 0
-                        available: Brightness.available
-                        showArrow: false
-                        onMoved: (v) => Brightness.setValue(v * Brightness.maxValue)
-                    }
-
-                    // mídia (só quando há player)
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Layout.topMargin: 4
-                        visible: panel.player !== null && !ControlCenter.mixerOpen
-                        spacing: 8
-
-                        Rectangle {
-                            width: 30
-                            height: 30
-                            radius: 15
-                            color: Theme.accentAlt
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: panel.player !== null && panel.player.isPlaying ? "\u{F03E4}" : "\u{F040A}" // pause / play
-                                font.family: Theme.iconFont
-                                font.pixelSize: 15
-                                color: Theme.foreground
+                                opacity: 0
+                                scale: 0.96
+                                shiftX: -28
                             }
 
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    if (panel.player !== null && panel.player.canTogglePlaying)
-                                        panel.player.togglePlaying();
+                            PropertyChanges {
+                                target: mixerView
+
+                                opacity: 1
+                                scale: 1
+                                shiftX: 0
+                            }
+                        }
+
+                        transitions: [
+                            // abrindo: níveis saem rápido à esquerda, mixer entra suave da direita
+                            Transition {
+                                from: ""
+                                to: "mixer"
+
+                                ParallelAnimation {
+                                    NumberAnimation { target: levelsView; property: "opacity"; duration: 140; easing.type: Easing.OutCubic }
+                                    NumberAnimation { target: levelsView; property: "shiftX"; duration: 280; easing.type: Easing.OutCubic }
+                                    NumberAnimation { target: levelsView; property: "scale"; duration: 280; easing.type: Easing.OutCubic }
+                                    NumberAnimation { target: mixerView; property: "opacity"; duration: 220; easing.type: Easing.OutCubic }
+                                    NumberAnimation { target: mixerView; property: "shiftX"; duration: 280; easing.type: Easing.OutCubic }
+                                    NumberAnimation { target: mixerView; property: "scale"; duration: 280; easing.type: Easing.OutCubic }
+                                }
+                            },
+                            // fechando: mixer sai rápido à direita, níveis voltam suave da esquerda
+                            Transition {
+                                from: "mixer"
+                                to: ""
+
+                                ParallelAnimation {
+                                    NumberAnimation { target: mixerView; property: "opacity"; duration: 140; easing.type: Easing.OutCubic }
+                                    NumberAnimation { target: mixerView; property: "shiftX"; duration: 280; easing.type: Easing.OutCubic }
+                                    NumberAnimation { target: mixerView; property: "scale"; duration: 280; easing.type: Easing.OutCubic }
+                                    NumberAnimation { target: levelsView; property: "opacity"; duration: 220; easing.type: Easing.OutCubic }
+                                    NumberAnimation { target: levelsView; property: "shiftX"; duration: 280; easing.type: Easing.OutCubic }
+                                    NumberAnimation { target: levelsView; property: "scale"; duration: 280; easing.type: Easing.OutCubic }
                                 }
                             }
-                        }
+                        ]
 
+                        // ---- visão 0: níveis (saída/microfone/brilho) ----
                         ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 1
+                            id: levelsView
 
-                            Text {
-                                Layout.fillWidth: true
-                                text: panel.player !== null ? panel.player.identity : ""
-                                color: Theme.foreground
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 12
-                                elide: Text.ElideRight
-                            }
-
-                            Text {
-                                Layout.fillWidth: true
-                                text: panel.player !== null ? (panel.player.trackTitle || "—") : ""
-                                color: Theme.foregroundDim
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 10
-                                elide: Text.ElideRight
-                            }
-                        }
-                    }
-
-                    // ---- mixer de aplicativos (substitui os Levels) ----
-                    Text {
-                        Layout.fillWidth: true
-                        visible: ControlCenter.mixerOpen
-                        text: "Aplicativos tocando som"
-                        color: Theme.foregroundDim
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 11
-                    }
-
-                    Flickable {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: Math.min(mixCol.implicitHeight, 240)
-                        visible: ControlCenter.mixerOpen
-                        contentHeight: mixCol.implicitHeight
-                        clip: true
-                        interactive: contentHeight > height
-
-                        Column {
-                            id: mixCol
-
-                            width: parent.width
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
                             spacing: 8
 
-                            Repeater {
-                                model: Audio.playbackStreams
+                            property real shiftX: 0
+                            transform: Translate { x: levelsView.shiftX }
 
-                                delegate: LevelRow {
-                                    required property var modelData
-
-                                    width: mixCol.width
-                                    glyph: modelData.audio && modelData.audio.muted ? "\u{F0581}" : "\u{F057E}"
-                                    title: Audio.streamName(modelData) + " · "
-                                           + Math.round((modelData.audio ? modelData.audio.volume : 0) * 100) + "%"
-                                    subtitle: ""
-                                    value: modelData.audio ? modelData.audio.volume : 0
-                                    muted: modelData.audio ? modelData.audio.muted : false
-                                    showArrow: false
-                                    onMoved: (v) => {
-                                        if (modelData.audio)
-                                            modelData.audio.volume = v;
-                                    }
-                                    onIconClicked: {
-                                        if (modelData.audio)
-                                            modelData.audio.muted = !modelData.audio.muted;
-                                    }
-                                }
-                            }
+                            opacity: 1
+                            scale: 1
+                            enabled: !ControlCenter.mixerOpen
 
                             Text {
-                                width: mixCol.width
-                                visible: Audio.playbackStreams.length === 0
-                                horizontalAlignment: Text.AlignHCenter
-                                text: "nenhum aplicativo tocando som agora"
+                                text: "Levels"
                                 color: Theme.foregroundDim
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 11
                             }
+
+                            LevelRow {
+                                id: sinkRow
+
+                                Layout.fillWidth: true
+                                glyph: panel.sink && panel.sink.audio && panel.sink.audio.muted ? "\u{F0581}" : "\u{F057E}" // volume-off / volume-high
+                                title: "Saída · " + Math.round((panel.sink && panel.sink.audio ? panel.sink.audio.volume : 0) * 100) + "%"
+                                subtitle: panel.sink ? (panel.sink.description || panel.sink.name) : "sem saída de áudio"
+                                value: panel.sink && panel.sink.audio ? panel.sink.audio.volume : 0
+                                muted: panel.sink && panel.sink.audio ? panel.sink.audio.muted : false
+                                onMoved: (v) => {
+                                    if (panel.sink && panel.sink.audio)
+                                        panel.sink.audio.volume = v;
+                                }
+                                onIconClicked: {
+                                    if (panel.sink && panel.sink.audio)
+                                        panel.sink.audio.muted = !panel.sink.audio.muted;
+                                }
+                                onArrowClicked: {
+                                    if (panel.deviceMenuOpen && panel.deviceMenuKind === "sink") {
+                                        panel.deviceMenuOpen = false;
+                                    } else {
+                                        panel.deviceMenuAnchor = sinkRow.arrowItem;
+                                        panel.deviceMenuKind = "sink";
+                                        panel.deviceMenuOpen = true;
+                                    }
+                                }
+                            }
+
+                            LevelRow {
+                                id: sourceRow
+
+                                Layout.fillWidth: true
+                                glyph: panel.source && panel.source.audio && panel.source.audio.muted ? "\u{F036D}" : "\u{F036C}" // mic-off / mic
+                                title: "Microfone · " + Math.round((panel.source && panel.source.audio ? panel.source.audio.volume : 0) * 100) + "%"
+                                subtitle: panel.source ? (panel.source.description || panel.source.name) : "sem microfone"
+                                value: panel.source && panel.source.audio ? panel.source.audio.volume : 0
+                                muted: panel.source && panel.source.audio ? panel.source.audio.muted : false
+                                onMoved: (v) => {
+                                    if (panel.source && panel.source.audio)
+                                        panel.source.audio.volume = v;
+                                }
+                                onIconClicked: {
+                                    if (panel.source && panel.source.audio)
+                                        panel.source.audio.muted = !panel.source.audio.muted;
+                                }
+                                onArrowClicked: {
+                                    if (panel.deviceMenuOpen && panel.deviceMenuKind === "source") {
+                                        panel.deviceMenuOpen = false;
+                                    } else {
+                                        panel.deviceMenuAnchor = sourceRow.arrowItem;
+                                        panel.deviceMenuKind = "source";
+                                        panel.deviceMenuOpen = true;
+                                    }
+                                }
+                            }
+
+                            LevelRow {
+                                Layout.fillWidth: true
+                                glyph: "\u{F0599}" // nf-md-brightness-6
+                                title: "Brilho · " + Brightness.value + "%"
+                                subtitle: Brightness.available
+                                          ? ("DDC/CI · " + Brightness.displayName)
+                                          : "sem DDC/CI neste sistema"
+                                value: Brightness.available ? Brightness.value / Brightness.maxValue : 0
+                                available: Brightness.available
+                                showArrow: false
+                                onMoved: (v) => Brightness.setValue(v * Brightness.maxValue)
+                            }
+
+                            // mídia (só quando há player)
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Layout.topMargin: 4
+                                visible: panel.player !== null
+                                spacing: 8
+
+                                Rectangle {
+                                    width: 30
+                                    height: 30
+                                    radius: 15
+                                    color: Theme.accentAlt
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: panel.player !== null && panel.player.isPlaying ? "\u{F03E4}" : "\u{F040A}" // pause / play
+                                        font.family: Theme.iconFont
+                                        font.pixelSize: 15
+                                        color: Theme.foreground
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            if (panel.player !== null && panel.player.canTogglePlaying)
+                                                panel.player.togglePlaying();
+                                        }
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 1
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: panel.player !== null ? panel.player.identity : ""
+                                        color: Theme.foreground
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 12
+                                        elide: Text.ElideRight
+                                    }
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: panel.player !== null ? (panel.player.trackTitle || "—") : ""
+                                        color: Theme.foregroundDim
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 10
+                                        elide: Text.ElideRight
+                                    }
+                                }
+                            }
+
+                        }
+
+                        // ---- visão 1: mixer de aplicativos ----
+                        ColumnLayout {
+                            id: mixerView
+
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            spacing: 8
+
+                            property real shiftX: 28
+                            transform: Translate { x: mixerView.shiftX }
+
+                            opacity: 0
+                            scale: 0.96
+                            enabled: ControlCenter.mixerOpen
+
+                            // ---- mixer de aplicativos (substitui os Levels) ----
+                            Text {
+                                Layout.fillWidth: true
+                                text: "Aplicativos tocando som"
+                                color: Theme.foregroundDim
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 11
+                            }
+
+                            Flickable {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Math.min(mixCol.implicitHeight, 240)
+                                contentHeight: mixCol.implicitHeight
+                                clip: true
+                                interactive: contentHeight > height
+
+                                Column {
+                                    id: mixCol
+
+                                    width: parent.width
+                                    spacing: 8
+
+                                    Repeater {
+                                        model: Audio.playbackStreams
+
+                                        delegate: LevelRow {
+                                            required property var modelData
+
+                                            width: mixCol.width
+                                            glyph: modelData.audio && modelData.audio.muted ? "\u{F0581}" : "\u{F057E}"
+                                            title: Audio.streamName(modelData) + " · "
+                                                   + Math.round((modelData.audio ? modelData.audio.volume : 0) * 100) + "%"
+                                            subtitle: ""
+                                            value: modelData.audio ? modelData.audio.volume : 0
+                                            muted: modelData.audio ? modelData.audio.muted : false
+                                            showArrow: false
+                                            onMoved: (v) => {
+                                                if (modelData.audio)
+                                                    modelData.audio.volume = v;
+                                            }
+                                            onIconClicked: {
+                                                if (modelData.audio)
+                                                    modelData.audio.muted = !modelData.audio.muted;
+                                            }
+                                        }
+                                    }
+
+                                    Text {
+                                        width: mixCol.width
+                                        visible: Audio.playbackStreams.length === 0
+                                        horizontalAlignment: Text.AlignHCenter
+                                        text: "nenhum aplicativo tocando som agora"
+                                        color: Theme.foregroundDim
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 11
+                                    }
+                                }
+                            }
+
                         }
                     }
 
