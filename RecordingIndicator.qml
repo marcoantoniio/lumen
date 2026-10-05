@@ -61,7 +61,7 @@ Row {
         color: Theme.recording
 
         SequentialAnimation on opacity {
-            running: true
+            running: Recorder.recording
             paused: Recorder.paused
             loops: Animation.Infinite
 
