@@ -27,11 +27,13 @@ PanelWindow {
         right: true
     }
     margins {
-        top: Theme.barMargin
+        // sem margem em cima: a pílula é que se posiciona (colada no topo no
+        // formato quadrado, ou com a margem no formato arredondado)
+        top: 0
         left: Theme.barMargin
         right: Theme.barMargin
     }
-    implicitHeight: Theme.barHeight
+    implicitHeight: Theme.barHeight + Theme.barMargin
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
     aboveWindows: true
@@ -141,13 +143,23 @@ PanelWindow {
     Rectangle {
         id: pill
 
-        anchors.centerIn: parent
+        anchors.horizontalCenter: parent.horizontalCenter
+        // no formato quadrado sobe 1px: a borda de cima fica fora da tela e o
+        // preenchimento escuro encosta no topo de verdade (sem a linha clara)
+        y: Island.square ? -1 : Theme.barMargin
         height: Theme.barHeight
-        radius: Theme.barRadius
+        radius: Island.square ? 0 : Theme.barRadius
         color: Theme.background
         border.width: 1
         border.color: Theme.border
         clip: true
+
+        Behavior on y {
+            NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+        }
+        Behavior on radius {
+            NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+        }
 
         // 0 = colapsado, 1 = expandido (animado)
         property real reveal: bar.expanded ? 1 : 0
@@ -193,12 +205,16 @@ PanelWindow {
             : centerMode === "music" ? nowPlaying.implicitWidth
             : clockItem.implicitWidth
 
-        width: Math.max(centerWidth + Theme.pillPadding * 2
+        // parada: 175px fixos no formato quadrado; no redondo, o tamanho de
+        // sempre (relógio + padding). O hover soma os elementos laterais.
+        width: Math.max((Island.square
+                         ? Math.max(Theme.pillIdleWidth, centerWidth + Theme.pillPadding * 2)
+                         : centerWidth + Theme.pillPadding * 2)
                         + reveal * (sideWidth * 2 + Theme.spacing * 2),
                         animatedPanelWidth)
 
-        bottomLeftRadius: panelTargetWidth > 0 ? 0 : Theme.barRadius
-        bottomRightRadius: panelTargetWidth > 0 ? 0 : Theme.barRadius
+        bottomLeftRadius: (panelTargetWidth > 0 || Island.square) ? 0 : Theme.barRadius
+        bottomRightRadius: (panelTargetWidth > 0 || Island.square) ? 0 : Theme.barRadius
 
         Behavior on bottomLeftRadius {
             NumberAnimation { duration: 160; easing.type: Easing.OutCubic }

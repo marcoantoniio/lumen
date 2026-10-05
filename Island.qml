@@ -6,8 +6,29 @@ pragma Singleton
 // em qualquer tela.
 
 import Quickshell
+import Quickshell.Io
 import QtQuick
 
 Singleton {
+    id: root
+
     property bool hovered: false
+
+    // Formato da ilha: false = pílula arredondada flutuando; true = quadrada,
+    // colada no topo da tela. Persiste entre reinícios do shell.
+    property bool square: false
+
+    onSquareChanged: Quickshell.execDetached(["sh", "-c",
+        "printf '%s' '" + (square ? "1" : "0") + "' > '" + Quickshell.stateDir + "/island_square.txt'"])
+
+    Process {
+        id: loadProc
+
+        command: ["cat", Quickshell.stateDir + "/island_square.txt"]
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: root.square = text.trim() === "1"
+        }
+    }
 }

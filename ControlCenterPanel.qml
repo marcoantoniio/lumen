@@ -517,6 +517,14 @@ PopupWindow {
                             active: Webcam.open
                             onActivated: Webcam.toggle()
                         }
+
+                        QuickToggle {
+                            Layout.fillWidth: true
+                            glyph: "\u{F0763}" // nf-md-square-outline
+                            label: "Ilha quadrada"
+                            active: Island.square
+                            onActivated: Island.square = !Island.square
+                        }
                     }
 
                     Text {

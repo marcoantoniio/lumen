@@ -38,6 +38,10 @@ Singleton {
     readonly property string fontFamily: "Noto Sans"
     readonly property string iconFont: "JetBrainsMono Nerd Font"
 
+    // Largura da ilha parada (o relógio fica centralizado nela; fixa, não
+    // varia com o texto do relógio)
+    readonly property int pillIdleWidth: 175
+
     // Larguras dos painéis (a ilha se adapta a elas quando abrem)
     readonly property int notificationPanelWidth: 380
     readonly property int controlCenterPanelWidth: 540
