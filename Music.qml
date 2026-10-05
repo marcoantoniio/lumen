@@ -257,11 +257,140 @@ Singleton {
         root.setLyricsNotFound();
     }
 
+    // ---------- fila/playlist (faixas do álbum da faixa atual) ----------
+    // O Deezer não expõe a fila via MPRIS; montamos a lista pela API pública
+    // do álbum da faixa atual: anteriores = já tocaram, atual = highlight,
+    // seguintes = vão tocar. Clicar toca no Deezer (OpenUri).
+    property var queueTracks: []
+    property int queueIndex: -1
+    property bool queueLoading: false
+    property string queueStatus: "" // "", "ok", "notrack", "error"
+    property string _queueAlbumId: ""
+
+    function currentTrackUrl() {
+        const md = root.player ? root.player.metadata : null;
+        return md && md["xesam:url"] ? String(md["xesam:url"]) : "";
+    }
+
+    function trackIdFromUrl(url) {
+        const m = url.match(/track\/(\d+)/);
+        return m ? m[1] : "";
+    }
+
+    function fetchQueue() {
+        const id = root.trackIdFromUrl(root.currentTrackUrl());
+        if (id === "") {
+            root.queueTracks = [];
+            root.queueIndex = -1;
+            root._queueAlbumId = "";
+            root.queueStatus = root.title === "" ? "" : "notrack";
+            return;
+        }
+        root.queueLoading = true;
+        root.queueStatus = "";
+        queueTrackProc.command = ["curl", "-s", "--max-time", "10",
+                                  "https://api.deezer.com/track/" + id];
+        queueTrackProc.running = true;
+    }
+
+    function parseQueueTrack(text) {
+        let data = null;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            data = null;
+        }
+        const albumId = data && data.album && data.album.id ? String(data.album.id) : "";
+        if (albumId === "") {
+            root.queueLoading = false;
+            root.queueTracks = [];
+            root.queueIndex = -1;
+            root.queueStatus = "error";
+            return;
+        }
+        if (albumId === root._queueAlbumId) {
+            root.queueLoading = false;
+            root.updateQueueIndex();
+            return;
+        }
+        root._queueAlbumId = albumId;
+        queueAlbumProc.command = ["curl", "-s", "--max-time", "10",
+                                  "https://api.deezer.com/album/" + albumId];
+        queueAlbumProc.running = true;
+    }
+
+    function parseQueueAlbum(text) {
+        root.queueLoading = false;
+        let data = null;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            data = null;
+        }
+        const list = data && data.tracks && data.tracks.data ? data.tracks.data : null;
+        if (!list) {
+            root.queueTracks = [];
+            root.queueIndex = -1;
+            root.queueStatus = "error";
+            return;
+        }
+        const out = [];
+        for (let i = 0; i < list.length; ++i) {
+            out.push({
+                id: String(list[i].id),
+                title: list[i].title || "",
+                duration: list[i].duration || 0,
+                url: "https://deezer.com/track/" + list[i].id
+            });
+        }
+        root.queueTracks = out;
+        root.queueStatus = "ok";
+        root.updateQueueIndex();
+    }
+
+    function updateQueueIndex() {
+        const id = root.trackIdFromUrl(root.currentTrackUrl());
+        let idx = -1;
+        for (let i = 0; i < root.queueTracks.length; ++i) {
+            if (root.queueTracks[i].id === id) {
+                idx = i;
+                break;
+            }
+        }
+        root.queueIndex = idx;
+    }
+
+    function playQueueTrack(url) {
+        if (root.player && root.player.dbusName !== "")
+            Quickshell.execDetached(["busctl", "--user", "call", root.player.dbusName,
+                                     "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2",
+                                     "OpenUri", "s", url]);
+    }
+
+    Process {
+        id: queueTrackProc
+        stdout: StdioCollector { onStreamFinished: root.parseQueueTrack(text) }
+    }
+
+    Process {
+        id: queueAlbumProc
+        stdout: StdioCollector { onStreamFinished: root.parseQueueAlbum(text) }
+    }
+
+    Timer {
+        id: queueDebounce
+        interval: 400
+        onTriggered: root.fetchQueue()
+    }
+
+    onSectionChanged: if (section === 3 && queueTracks.length === 0 && title !== "") fetchQueue()
+
     // ---------- troca de faixa ----------
     function refreshTrack() {
         root.livePosition = root.position;
         artDebounce.restart();
         lyricsDebounce.restart();
+        queueDebounce.restart();
     }
 
     Timer {
@@ -306,6 +435,7 @@ Singleton {
             return root.artist + " - " + root.title + (root.playing ? " (tocando)" : " (pausado)");
         }
         function getLyricsStatus(): string { return root.lyricsStatus; }
+        function getQueue(): string { return root.queueStatus + " " + root.queueIndex + "/" + root.queueTracks.length; }
         function section(n: int): void { root.section = n; }
         function panel(open: bool): void { root.panelOpen = open; }
     }

@@ -1,6 +1,6 @@
 // Painel de música — abre ao passar o mouse na ilha quando há música tocando.
 // Capa com brilho da cor do álbum, controles, progresso (seek), saída de áudio,
-// mixer por aplicativo e letras (lrclib).
+// mixer por aplicativo, playlist (fila do álbum) e letras (lrclib).
 
 import Quickshell
 import Quickshell.Services.Pipewire
@@ -353,7 +353,7 @@ PopupWindow {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 46
-                spacing: 6
+                spacing: 4
 
                 // mixer: ícone vira alto-falante e o slider aparece ao lado
                 SectionButton {
@@ -369,10 +369,10 @@ PopupWindow {
                     Layout.alignment: Qt.AlignVCenter
                     // Uma única animação (0..1) guia largura, opacidade e visibilidade
                     property real openness: Music.section === 1 ? 1 : 0
-                    // 100px: precisa caber nos 396px úteis da linha (com os demais
-                    // itens e espaçamentos). Se estourar, o layout cresce e arrasta
-                    // a barra de progresso junto.
-                    Layout.preferredWidth: 100 * openness
+                    // 84px: precisa caber nos 396px úteis da linha com os 4 botões
+                    // de seção. Se estourar, o layout cresce e arrasta a barra de
+                    // progresso junto.
+                    Layout.preferredWidth: 84 * openness
                     visible: openness > 0.01
                     opacity: openness
                     value: Music.player && Music.player.volumeSupported ? Music.player.volume : 0
@@ -437,6 +437,13 @@ PopupWindow {
                     glyph: "\u{F021A}" // nf-md-text_box (letras)
                     active: Music.section === 2
                     onActivated: Music.section = Music.section === 2 ? -1 : 2
+                }
+
+                SectionButton {
+                    Layout.alignment: Qt.AlignVCenter
+                    glyph: "\u{F0CB8}" // nf-md-playlist_music (playlist/fila)
+                    active: Music.section === 3
+                    onActivated: Music.section = Music.section === 3 ? -1 : 3
                 }
             }
 
@@ -643,6 +650,169 @@ PopupWindow {
                                 lyricsFlick.contentY = Math.max(0, Math.min(
                                     lyricsFlick.contentHeight - lyricsFlick.height,
                                     item.y - lyricsFlick.height / 2 + item.height / 2));
+                        }
+                    }
+                }
+            }
+
+            // ---- playlist/fila (álbum da faixa atual) ----
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 127
+                spacing: 4
+                visible: Music.section === 3
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: "Playlist" + (Music.album !== "" ? " · " + Music.album : "")
+                        color: Theme.foregroundDim
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
+                        elide: Text.ElideRight
+                    }
+
+                    Text {
+                        visible: Music.queueLoading
+                        text: "carregando…"
+                        color: Theme.foregroundDim
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
+                    }
+
+                    Text {
+                        visible: !Music.queueLoading && Music.queueStatus === "error"
+                        text: "não consegui carregar"
+                        color: Theme.foregroundDim
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
+                    }
+
+                    Text {
+                        visible: !Music.queueLoading && Music.queueStatus === "notrack"
+                        text: "sem fila neste player"
+                        color: Theme.foregroundDim
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
+                    }
+                }
+
+                Flickable {
+                    id: queueFlick
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.min(105, queueCol.implicitHeight)
+                    contentHeight: queueCol.implicitHeight
+                    clip: true
+                    interactive: contentHeight > height
+
+                    Behavior on contentY {
+                        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                    }
+
+                    // centraliza a faixa atual na lista
+                    function scrollToCurrent() {
+                        if (!visible || Music.queueIndex < 0)
+                            return;
+                        const item = queueCol.children[Music.queueIndex];
+                        if (item)
+                            queueFlick.contentY = Math.max(0, Math.min(
+                                queueFlick.contentHeight - queueFlick.height,
+                                item.y - queueFlick.height / 2 + item.height / 2));
+                    }
+
+                    onHeightChanged: scrollToCurrent()
+                    onVisibleChanged: if (visible) scrollToCurrent()
+
+                    Connections {
+                        target: Music
+
+                        function onQueueIndexChanged() { queueFlick.scrollToCurrent() }
+                    }
+
+                    Column {
+                        id: queueCol
+
+                        width: queueFlick.width
+                        spacing: 2
+
+                        Repeater {
+                            model: Music.queueTracks
+
+                            delegate: Rectangle {
+                                id: queueRow
+
+                                required property var modelData
+                                required property int index
+
+                                readonly property bool current: index === Music.queueIndex
+                                readonly property bool played: Music.queueIndex >= 0 && index < Music.queueIndex
+
+                                width: queueCol.width
+                                height: 22
+                                radius: 6
+                                color: queueRow.current
+                                       ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.16)
+                                       : (queueArea.containsMouse ? Theme.surfaceHover : "transparent")
+
+                                Behavior on color {
+                                    ColorAnimation { duration: 120 }
+                                }
+
+                                Text {
+                                    id: queueNumber
+
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 8
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 20
+                                    horizontalAlignment: Text.AlignRight
+                                    text: queueRow.index + 1
+                                    color: queueRow.current ? Theme.accent : Theme.foregroundDim
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 10
+                                    font.bold: queueRow.current
+                                }
+
+                                Text {
+                                    anchors.left: queueNumber.right
+                                    anchors.leftMargin: 8
+                                    anchors.right: queueDuration.left
+                                    anchors.rightMargin: 8
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: queueRow.modelData.title
+                                    color: queueRow.current ? Theme.accent
+                                         : (queueRow.played ? Theme.foregroundDim : Theme.foreground)
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 11
+                                    font.bold: queueRow.current
+                                    elide: Text.ElideRight
+                                }
+
+                                Text {
+                                    id: queueDuration
+
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 8
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: panel.formatTime(queueRow.modelData.duration)
+                                    color: queueRow.current ? Theme.accent : Theme.foregroundDim
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 10
+                                }
+
+                                MouseArea {
+                                    id: queueArea
+
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: Music.playQueueTrack(queueRow.modelData.url)
+                                }
+                            }
                         }
                     }
                 }

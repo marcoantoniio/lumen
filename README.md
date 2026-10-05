@@ -51,8 +51,9 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
   por app); linha de mídia (MPRIS).
 - **Música**: passando o mouse na ilha (com música tocando) abre um painel com
   capa e **brilho da cor do álbum**, controles (anterior/play/próxima), seek,
-  **saída de áudio**, **mixer por aplicativo** e **letras** (lrclib, com
-  sincronia e linha atual destacada).
+  **saída de áudio**, **mixer por aplicativo**, **playlist** (fila do álbum da
+  faixa atual: já tocadas apagadas, atual destacada e próximas — clicar toca) e
+  **letras** (lrclib, com sincronia e linha atual destacada).
 - **Dashboard**: saudação ("Bom dia/Boa tarde/Boa noite, Nome"), **calendário**
   com semana atual + mini-mês, **clima** com previsão horária (umidade, vento,
   chuva) e **Sistema** com CPU, RAM, GPU, temperatura, disco e uptime — tudo
