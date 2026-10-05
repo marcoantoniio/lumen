@@ -48,8 +48,4 @@ Singleton {
     // Tela do painel da câmera (nome do monitor: "DP-1", "HDMI-A-1", ...).
     // Se o nome não existir no seu setup, cai na primeira tela.
     readonly property string cameraScreenName: "DP-1"
-
-    // Seu ID de usuário do Deezer (a seção Playlist procura a faixa atual nas
-    // suas playlists públicas). Vazio desliga a busca e mostra só o álbum.
-    readonly property string deezerUserId: "6557886841"
 }
