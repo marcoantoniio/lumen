@@ -74,6 +74,10 @@ PopupWindow {
         border.width: 1
         border.color: Theme.border
 
+        HoverHandler {
+            onHoveredChanged: RecentFiles.panelHovered = hovered
+        }
+
         opacity: panel.visible ? 1 : 0
 
         Behavior on opacity {

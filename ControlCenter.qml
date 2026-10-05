@@ -11,6 +11,10 @@ Singleton {
     id: root
 
     property bool open: false
+    // Mouse em cima do painel (o CC fecha quando sai da ilha e do painel)
+    property bool panelHovered: false
+    // Menu de dispositivos de áudio aberto (segura o painel durante a escolha)
+    property bool deviceMenuOpen: false
     // Mixer de aplicativos aberto no lugar dos Levels (botão no CC)
     property bool mixerOpen: false
     property int tab: 0

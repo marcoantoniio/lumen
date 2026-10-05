@@ -47,12 +47,6 @@ PopupWindow {
             Qt.callLater(() => Music.panelOpen = false);
     }
 
-    Timer {
-        id: closeTimer
-        interval: 350
-        onTriggered: if (!Music.panelHovered) Music.panelOpen = false
-    }
-
     function formatTime(seconds) {
         const t = Math.max(0, Math.floor(seconds));
         return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0");
@@ -166,11 +160,7 @@ PopupWindow {
 
         // Hover do painel (precisa estar num Item; no PopupWindow não funciona)
         HoverHandler {
-            onHoveredChanged: {
-                Music.panelHovered = hovered;
-                if (!hovered)
-                    closeTimer.restart();
-            }
+            onHoveredChanged: Music.panelHovered = hovered
         }
 
         width: parent.width

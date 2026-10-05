@@ -50,6 +50,10 @@ PopupWindow {
         border.width: 1
         border.color: Theme.border
 
+        HoverHandler {
+            onHoveredChanged: Notifications.panelHovered = hovered
+        }
+
         opacity: center.visible ? 1 : 0
         scale: center.visible ? 1 : 0.97
 
@@ -308,7 +312,11 @@ PopupWindow {
 
                 Item { Layout.fillWidth: true }
 
-                Tray {}
+                Tray {
+                    id: tray
+
+                    onMenuOpenChanged: Notifications.menuOpen = tray.menuOpen
+                }
             }
         }
     }

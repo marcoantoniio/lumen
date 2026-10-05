@@ -17,6 +17,10 @@ Singleton {
     id: root
 
     property bool centerOpen: false
+    // Mouse em cima do painel (fecha quando sai da ilha e do painel)
+    property bool panelHovered: false
+    // Menu da bandeja do sistema aberto (segura o painel durante a escolha)
+    property bool menuOpen: false
     property bool dnd: false
     property var popups: []
     property string activeCategory: ""

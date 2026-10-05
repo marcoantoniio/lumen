@@ -36,6 +36,9 @@ PopupWindow {
     property string deviceMenuKind: "sink"
     property var deviceMenuAnchor: null
 
+    // reflete no singleton (o timer de fechamento da barra consulta)
+    onDeviceMenuOpenChanged: ControlCenter.deviceMenuOpen = deviceMenuOpen
+
     // Métricas para o card "Sistema" (3ª coluna do Dashboard)
     readonly property var sysMetrics: {
         const out = [];
@@ -324,6 +327,10 @@ PopupWindow {
         color: Theme.surface
         border.width: 1
         border.color: Theme.border
+
+        HoverHandler {
+            onHoveredChanged: ControlCenter.panelHovered = hovered
+        }
 
         opacity: panel.visible ? 1 : 0
         scale: panel.visible ? 1 : 0.97

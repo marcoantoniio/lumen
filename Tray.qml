@@ -11,6 +11,10 @@ Row {
 
     spacing: 6
 
+    // Algum menu de item aberto? (segura o painel de notificações)
+    property int openMenus: 0
+    readonly property bool menuOpen: openMenus > 0
+
     Repeater {
         id: items
 
@@ -38,6 +42,8 @@ Row {
 
                 menu: entry.modelData.menu
                 anchor.item: entry
+
+                onVisibleChanged: root.openMenus += visible ? 1 : -1
             }
 
             MouseArea {

@@ -59,7 +59,35 @@ PanelWindow {
     Timer {
         id: musicCloseTimer
         interval: 350
-        onTriggered: if (!Music.panelHovered) Music.panelOpen = false
+        onTriggered: if (!Music.panelHovered && !Island.hovered) Music.panelOpen = false
+    }
+
+    // Control Center: fecha quando o mouse sai da ilha e do painel
+    Timer {
+        id: controlCenterCloseTimer
+
+        interval: 350
+        onTriggered: if (ControlCenter.open && !ControlCenter.panelHovered
+                         && !Island.hovered && !ControlCenter.deviceMenuOpen)
+                         ControlCenter.close()
+    }
+
+    // Recentes e Notificações: mesmo comportamento
+    Timer {
+        id: recentCloseTimer
+
+        interval: 350
+        onTriggered: if (RecentFiles.open && !RecentFiles.panelHovered && !Island.hovered)
+                         RecentFiles.close()
+    }
+
+    Timer {
+        id: notificationsCloseTimer
+
+        interval: 350
+        onTriggered: if (Notifications.centerOpen && !Notifications.panelHovered
+                         && !Island.hovered && !Notifications.menuOpen)
+                         Notifications.centerOpen = false
     }
 
     Connections {
@@ -68,6 +96,45 @@ PanelWindow {
         function onPanelHoveredChanged() {
             if (!Music.panelHovered && !barHover.hovered)
                 musicCloseTimer.restart();
+        }
+    }
+
+    Connections {
+        target: ControlCenter
+
+        function onPanelHoveredChanged() {
+            if (!ControlCenter.panelHovered && !Island.hovered)
+                controlCenterCloseTimer.restart();
+        }
+
+        // ao fechar o menu de dispositivos, reavalia (fecha se o mouse saiu)
+        function onDeviceMenuOpenChanged() {
+            if (!ControlCenter.deviceMenuOpen && !Island.hovered)
+                controlCenterCloseTimer.restart();
+        }
+    }
+
+    Connections {
+        target: RecentFiles
+
+        function onPanelHoveredChanged() {
+            if (!RecentFiles.panelHovered && !Island.hovered)
+                recentCloseTimer.restart();
+        }
+    }
+
+    Connections {
+        target: Notifications
+
+        function onPanelHoveredChanged() {
+            if (!Notifications.panelHovered && !Island.hovered)
+                notificationsCloseTimer.restart();
+        }
+
+        // ao fechar o menu da bandeja, reavalia (fecha se o mouse saiu)
+        function onMenuOpenChanged() {
+            if (!Notifications.menuOpen && !Island.hovered)
+                notificationsCloseTimer.restart();
         }
     }
 
@@ -144,16 +211,23 @@ PanelWindow {
             id: barHover
 
             onHoveredChanged: {
+                Island.hovered = barHover.hovered;
                 if (barHover.hovered) {
                     collapseTimer.stop();
                     bar.expanded = true;
                     musicCloseTimer.stop();
+                    controlCenterCloseTimer.stop();
+                    recentCloseTimer.stop();
+                    notificationsCloseTimer.stop();
                     if (Music.playing && !ControlCenter.open && !Notifications.centerOpen && !Webcam.open)
                         musicOpenTimer.start();
                 } else {
                     collapseTimer.start();
                     musicOpenTimer.stop();
                     musicCloseTimer.start();
+                    controlCenterCloseTimer.start();
+                    recentCloseTimer.start();
+                    notificationsCloseTimer.start();
                 }
             }
         }

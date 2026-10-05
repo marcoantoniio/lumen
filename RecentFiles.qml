@@ -13,6 +13,8 @@ Singleton {
     id: root
 
     property bool open: false
+    // Mouse em cima do painel (fecha quando sai da ilha e do painel)
+    property bool panelHovered: false
     property var files: []
 
     // Arquivos mais recentes das pastas do dia a dia (mais novo primeiro)
