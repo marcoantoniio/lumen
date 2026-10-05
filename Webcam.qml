@@ -14,24 +14,32 @@ Singleton {
     property bool open: false
 
     function toggle(): void {
-        root.open = !root.open;
-        if (root.open) {
+        if (!root.open) {
             ControlCenter.open = false;
+            Notifications.centerOpen = false;
             RecentFiles.open = false;
+            Music.panelOpen = false;
         }
+        root.open = !root.open;
     }
 
-    function open(): void {
-        root.open = true;
+    function show(): void {
         ControlCenter.open = false;
+        Notifications.centerOpen = false;
         RecentFiles.open = false;
+        Music.panelOpen = false;
+        root.open = true;
+    }
+
+    function close(): void {
+        root.open = false;
     }
 
     IpcHandler {
         target: "camera"
 
         function toggle(): void { root.toggle(); }
-        function open(): void { root.open(); }
-        function close(): void { root.open = false; }
+        function open(): void { root.show(); }
+        function close(): void { root.close(); }
     }
 }
