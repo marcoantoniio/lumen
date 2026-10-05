@@ -1,4 +1,4 @@
-// Barra flutuante em pílula, uma instância por monitor.
+// Barra flutuante em pílula, no monitor principal (Theme.barScreenName).
 //
 // Comportamento (igual ao shell original):
 // - Idle: só o relógio.

@@ -38,9 +38,9 @@ Singleton {
     readonly property string fontFamily: "Noto Sans"
     readonly property string iconFont: "JetBrainsMono Nerd Font"
 
-    // Largura da ilha parada (o relógio fica centralizado nela; fixa, não
-    // varia com o texto do relógio)
-    readonly property int pillIdleWidth: 175
+    // Largura da ilha parada no formato quadrado (o relógio fica centralizado
+    // nela; fixa, não varia com o texto do relógio) — 175 + 3px de cada lado
+    readonly property int pillIdleWidth: 181
 
     // Larguras dos painéis (a ilha se adapta a elas quando abrem)
     readonly property int notificationPanelWidth: 380
@@ -52,4 +52,8 @@ Singleton {
     // Tela do painel da câmera (nome do monitor: "DP-1", "HDMI-A-1", ...).
     // Se o nome não existir no seu setup, cai na primeira tela.
     readonly property string cameraScreenName: "DP-1"
+
+    // Monitor onde a ilha dinâmica aparece (nome do monitor). Se não existir
+    // no seu setup, cai no primeiro monitor.
+    readonly property string barScreenName: "DP-1"
 }

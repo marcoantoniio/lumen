@@ -210,6 +210,7 @@ qs -c lumen ipc call recent toggle            # painel de arquivos recentes (hub
 | URL do botão navegador (SearXNG local) | `ControlCenterPanel.qml` (rodapé) |
 | Tamanho do painel | `Theme.qml` → `controlCenterPanelWidth` |
 | Tela do painel da câmera | `Theme.qml` → `cameraScreenName` |
+| Monitor da ilha dinâmica | `Theme.qml` → `barScreenName` |
 
 As cores seguem o formato `#AARRGGBB` do Qt (o `AA` é a transparência).
 
