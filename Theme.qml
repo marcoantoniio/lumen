@@ -44,4 +44,8 @@ Singleton {
     readonly property int musicPanelWidth: 420
     readonly property int cameraPanelWidth: 440
     readonly property int recentPanelWidth: 420
+
+    // Tela do painel da câmera (nome do monitor: "DP-1", "HDMI-A-1", ...).
+    // Se o nome não existir no seu setup, cai na primeira tela.
+    readonly property string cameraScreenName: "DP-1"
 }

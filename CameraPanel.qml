@@ -18,9 +18,9 @@ PopupWindow {
     readonly property int panelWidth: Theme.cameraPanelWidth
     readonly property var cameras: mediaDevices.videoInputs
 
-    // Só no monitor principal (evita duas instâncias abrindo a câmera)
-    readonly property bool primaryScreen: panelWindow !== null
-        && Quickshell.screens.length > 0 && panelWindow.screen === Quickshell.screens[0]
+    // Só na tela da câmera (Theme.cameraScreenName) — evita duas instâncias abrindo a câmera
+    readonly property bool onCameraScreen: panelWindow !== null && Webcam.screen !== null
+        && panelWindow.screen === Webcam.screen
 
     property var selectedDevice: null
     property string cameraError: ""
@@ -35,15 +35,24 @@ PopupWindow {
     implicitWidth: panelWidth
     implicitHeight: frame.implicitHeight
     color: "transparent"
-    visible: Webcam.open && primaryScreen && !ControlCenter.open && !Notifications.centerOpen && !Music.panelOpen
+    visible: Webcam.open && onCameraScreen && !ControlCenter.open && !Notifications.centerOpen && !Music.panelOpen
+
+    // Escolhe a câmera quando a lista assíncrona do MediaDevices chega (ou muda)
+    function pickCamera(): void {
+        if (!visible)
+            return;
+        if (selectedDevice === null || cameras.indexOf(selectedDevice) === -1)
+            selectedDevice = cameras.length > 0 ? cameras[0] : null;
+    }
 
     onVisibleChanged: {
-        if (visible && selectedDevice === null && cameras.length > 0)
-            selectedDevice = cameras[0];
+        pickCamera();
         // Qt.callLater evita binding loop no visible (bug de flicker)
         if (!visible && Webcam.open)
             Qt.callLater(() => Webcam.open = false);
     }
+
+    onCamerasChanged: pickCamera()
 
     MediaDevices {
         id: mediaDevices

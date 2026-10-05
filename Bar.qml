@@ -103,7 +103,7 @@ PanelWindow {
             : (Notifications.centerOpen ? Theme.notificationPanelWidth
             : (Music.panelOpen ? Theme.musicPanelWidth
             : (RecentFiles.open ? Theme.recentPanelWidth
-            : (Webcam.open ? Theme.cameraPanelWidth : 0))))
+            : (Webcam.open && bar.screen === Webcam.screen ? Theme.cameraPanelWidth : 0))))
 
         property real animatedPanelWidth: panelTargetWidth
 
