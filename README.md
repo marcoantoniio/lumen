@@ -51,11 +51,11 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
   por app); linha de mídia (MPRIS).
 - **Música**: passando o mouse na ilha (com música tocando) abre um painel com
   capa e **brilho da cor do álbum**, controles (anterior/play/próxima), seek,
-  **saída de áudio**, **mixer por aplicativo**, **playlist** (detecta em qual
-  das suas playlists do Deezer a faixa atual está e mostra ela: já tocadas
-  apagadas, atual destacada e próximas — clicar toca; sem correspondência,
-  mostra o álbum da faixa) e **letras** (lrclib, com sincronia e linha atual
-  destacada).
+  **saída de áudio**, **mixer por aplicativo**, **playlist** (detecta qual das
+  suas playlists do Deezer está tocando: as já tocadas são o histórico real da
+  sessão, a atual fica destacada e as próximas vêm da playlist — clicar toca;
+  recomendações do Deezer não quebram a lista) e **letras** (lrclib, com
+  sincronia e linha atual destacada).
 - **Dashboard**: saudação ("Bom dia/Boa tarde/Boa noite, Nome"), **calendário**
   com semana atual + mini-mês, **clima** com previsão horária (umidade, vento,
   chuva) e **Sistema** com CPU, RAM, GPU, temperatura, disco e uptime — tudo

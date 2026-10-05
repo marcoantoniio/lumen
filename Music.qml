@@ -257,13 +257,18 @@ Singleton {
         root.setLyricsNotFound();
     }
 
-    // ---------- fila/playlist (a sua playlist tocando, ou o álbum de fallback) ----------
-    // O Deezer não expõe a fila via MPRIS. Baixamos as playlists públicas do
-    // usuário (Theme.deezerUserId) e procuramos a faixa atual em cada uma: se
-    // achar, mostramos a playlist de verdade (anteriores = já tocaram, atual =
-    // highlight, seguintes = vão tocar). Se não achar, cai no álbum da faixa.
+    // ---------- fila/playlist (sua playlist + histórico real da sessão) ----------
+    // O Deezer não expõe a fila via MPRIS. Montamos a lista assim:
+    // - já tocadas: histórico real desta sessão (qualquer fonte, na ordem);
+    // - atual: a faixa tocando (highlight);
+    // - próximas: da última playlist sua detectada (a faixa atual ou a última
+    //   tocada ancora a posição), sem repetir o que já tocou.
+    // A playlist fica mesmo quando a faixa é recomendação (não pertence a
+    // nenhuma playlist); só cai no álbum se nenhuma playlist foi detectada.
     // Clicar toca no Deezer (OpenUri).
     property var queueTracks: []
+    property var queueRows: []
+    property var playHistory: []
     property int queueIndex: -1
     property bool queueLoading: false
     property string queueStatus: "" // "", "ok", "notrack", "error"
@@ -396,19 +401,33 @@ Singleton {
                 for (let k = 0; k < list.length; ++k) {
                     if (list[k].id === id) {
                         root.queueTracks = list;
-                        root.queueIndex = k;
                         root.queueSourceKind = "playlist";
                         root.queueSourceTitle = root.playlistTitle(pid);
                         root.queueStatus = "ok";
                         root.queueLoading = false;
                         root._queueAlbumId = "";
                         root._lastQueuePlaylistId = pid;
+                        root.rebuildQueueRows();
                         return;
                     }
                 }
             }
         }
-        root._lastQueuePlaylistId = "";
+        // recomendação: não pertence a nenhuma playlist — mantém a última
+        // detectada (o histórico continua exato)
+        if (root._lastQueuePlaylistId !== "") {
+            const list = root.playlistTracks[root._lastQueuePlaylistId];
+            if (list) {
+                root.queueTracks = list;
+                root.queueSourceKind = "playlist";
+                root.queueSourceTitle = root.playlistTitle(root._lastQueuePlaylistId);
+                root.queueStatus = "ok";
+                root.queueLoading = false;
+                root._queueAlbumId = "";
+                root.rebuildQueueRows();
+                return;
+            }
+        }
         root.fetchAlbumQueue(id);
     }
 
@@ -440,7 +459,7 @@ Singleton {
         }
         if (albumId === root._queueAlbumId) {
             root.queueLoading = false;
-            root.updateQueueIndex();
+            root.rebuildQueueRows();
             return;
         }
         root._queueAlbumId = albumId;
@@ -480,19 +499,90 @@ Singleton {
         root.queueSourceKind = "album";
         if (data.title)
             root.queueSourceTitle = data.title;
-        root.updateQueueIndex();
+        root.rebuildQueueRows();
     }
 
-    function updateQueueIndex() {
+    // registra a faixa atual no histórico (dedup por id; cap 60)
+    function notePlayed() {
         const id = root.trackIdFromUrl(root.currentTrackUrl());
-        let idx = -1;
-        for (let i = 0; i < root.queueTracks.length; ++i) {
-            if (root.queueTracks[i].id === id) {
-                idx = i;
+        if (id === "" || root.title === "")
+            return;
+        const h = root.playHistory;
+        if (h.length > 0 && h[h.length - 1].id === id)
+            return;
+        const next = h.slice();
+        next.push({
+            id: id,
+            title: root.title,
+            duration: root.length,
+            url: "https://deezer.com/track/" + id
+        });
+        while (next.length > 60)
+            next.shift();
+        root.playHistory = next;
+    }
+
+    // monta as linhas da seção: tocadas (histórico) + atual + próximas da playlist
+    function rebuildQueueRows() {
+        const rows = [];
+        const hist = root.playHistory;
+        const currentId = root.trackIdFromUrl(root.currentTrackUrl());
+
+        // já tocadas = histórico sem a atual
+        let played = hist;
+        if (played.length > 0 && currentId !== "" && played[played.length - 1].id === currentId)
+            played = played.slice(0, played.length - 1);
+        for (let i = 0; i < played.length; ++i)
+            rows.push({ kind: "played", id: played[i].id, title: played[i].title,
+                        duration: played[i].duration, url: played[i].url });
+
+        // atual
+        if (currentId !== "" || root.title !== "") {
+            const cur = hist.length > 0 && hist[hist.length - 1].id === currentId
+                        ? hist[hist.length - 1] : null;
+            rows.push({
+                kind: "current",
+                id: currentId,
+                title: cur ? cur.title : root.title,
+                duration: cur ? cur.duration : root.length,
+                url: currentId !== "" ? "https://deezer.com/track/" + currentId : ""
+            });
+            root.queueIndex = rows.length - 1;
+        } else {
+            root.queueIndex = -1;
+        }
+
+        // próximas: da playlist, depois da atual (ou do último ponto conhecido),
+        // sem repetir o que já tocou nem a atual
+        const seen = {};
+        for (let i = 0; i < hist.length; ++i)
+            seen[hist[i].id] = true;
+        if (currentId !== "")
+            seen[currentId] = true;
+        const list = root.queueTracks;
+        let anchor = -1;
+        for (let i = 0; i < list.length; ++i)
+            if (list[i].id === currentId) {
+                anchor = i;
                 break;
             }
+        if (anchor < 0) {
+            for (let h = hist.length - 1; h >= 0 && anchor < 0; --h) {
+                for (let i = 0; i < list.length; ++i)
+                    if (list[i].id === hist[h].id) {
+                        anchor = i;
+                        break;
+                    }
+            }
         }
-        root.queueIndex = idx;
+        for (let i = anchor + 1; i < list.length && rows.length < 200; ++i) {
+            if (seen[list[i].id])
+                continue;
+            rows.push({ kind: "upcoming", id: list[i].id, title: list[i].title,
+                        duration: list[i].duration, url: list[i].url });
+        }
+
+        root.queueRows = rows;
     }
 
     function playQueueTrack(url) {
@@ -545,6 +635,8 @@ Singleton {
     // ---------- troca de faixa ----------
     function refreshTrack() {
         root.livePosition = root.position;
+        root.notePlayed();
+        root.rebuildQueueRows();
         artDebounce.restart();
         lyricsDebounce.restart();
         queueDebounce.restart();

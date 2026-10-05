@@ -744,7 +744,7 @@ PopupWindow {
                         spacing: 2
 
                         Repeater {
-                            model: Music.queueTracks
+                            model: Music.queueRows
 
                             delegate: Rectangle {
                                 id: queueRow
@@ -752,8 +752,8 @@ PopupWindow {
                                 required property var modelData
                                 required property int index
 
-                                readonly property bool current: index === Music.queueIndex
-                                readonly property bool played: Music.queueIndex >= 0 && index < Music.queueIndex
+                                readonly property bool current: modelData.kind === "current"
+                                readonly property bool played: modelData.kind === "played"
 
                                 width: queueCol.width
                                 height: 22
