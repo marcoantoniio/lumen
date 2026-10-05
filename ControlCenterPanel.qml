@@ -566,6 +566,7 @@ PopupWindow {
                     spacing: 8
 
                     Text {
+                        visible: !ControlCenter.mixerOpen
                         text: "Levels"
                         color: Theme.foregroundDim
                         font.family: Theme.fontFamily
@@ -576,6 +577,7 @@ PopupWindow {
                         id: sinkRow
 
                         Layout.fillWidth: true
+                        visible: !ControlCenter.mixerOpen
                         glyph: panel.sink && panel.sink.audio && panel.sink.audio.muted ? "\u{F0581}" : "\u{F057E}" // volume-off / volume-high
                         title: "Saída · " + Math.round((panel.sink && panel.sink.audio ? panel.sink.audio.volume : 0) * 100) + "%"
                         subtitle: panel.sink ? (panel.sink.description || panel.sink.name) : "sem saída de áudio"
@@ -604,6 +606,7 @@ PopupWindow {
                         id: sourceRow
 
                         Layout.fillWidth: true
+                        visible: !ControlCenter.mixerOpen
                         glyph: panel.source && panel.source.audio && panel.source.audio.muted ? "\u{F036D}" : "\u{F036C}" // mic-off / mic
                         title: "Microfone · " + Math.round((panel.source && panel.source.audio ? panel.source.audio.volume : 0) * 100) + "%"
                         subtitle: panel.source ? (panel.source.description || panel.source.name) : "sem microfone"
@@ -630,6 +633,7 @@ PopupWindow {
 
                     LevelRow {
                         Layout.fillWidth: true
+                        visible: !ControlCenter.mixerOpen
                         glyph: "\u{F0599}" // nf-md-brightness-6
                         title: "Brilho · " + Brightness.value + "%"
                         subtitle: Brightness.available
@@ -645,7 +649,7 @@ PopupWindow {
                     RowLayout {
                         Layout.fillWidth: true
                         Layout.topMargin: 4
-                        visible: panel.player !== null
+                        visible: panel.player !== null && !ControlCenter.mixerOpen
                         spacing: 8
 
                         Rectangle {
@@ -694,6 +698,77 @@ PopupWindow {
                                 elide: Text.ElideRight
                             }
                         }
+                    }
+
+                    // ---- mixer de aplicativos (substitui os Levels) ----
+                    Text {
+                        Layout.fillWidth: true
+                        visible: ControlCenter.mixerOpen
+                        text: "Aplicativos tocando som"
+                        color: Theme.foregroundDim
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 11
+                    }
+
+                    Flickable {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: Math.min(mixCol.implicitHeight, 240)
+                        visible: ControlCenter.mixerOpen
+                        contentHeight: mixCol.implicitHeight
+                        clip: true
+                        interactive: contentHeight > height
+
+                        Column {
+                            id: mixCol
+
+                            width: parent.width
+                            spacing: 8
+
+                            Repeater {
+                                model: Audio.playbackStreams
+
+                                delegate: LevelRow {
+                                    required property var modelData
+
+                                    width: mixCol.width
+                                    glyph: modelData.audio && modelData.audio.muted ? "\u{F0581}" : "\u{F057E}"
+                                    title: Audio.streamName(modelData) + " · "
+                                           + Math.round((modelData.audio ? modelData.audio.volume : 0) * 100) + "%"
+                                    subtitle: ""
+                                    value: modelData.audio ? modelData.audio.volume : 0
+                                    muted: modelData.audio ? modelData.audio.muted : false
+                                    showArrow: false
+                                    onMoved: (v) => {
+                                        if (modelData.audio)
+                                            modelData.audio.volume = v;
+                                    }
+                                    onIconClicked: {
+                                        if (modelData.audio)
+                                            modelData.audio.muted = !modelData.audio.muted;
+                                    }
+                                }
+                            }
+
+                            Text {
+                                width: mixCol.width
+                                visible: Audio.playbackStreams.length === 0
+                                horizontalAlignment: Text.AlignHCenter
+                                text: "nenhum aplicativo tocando som agora"
+                                color: Theme.foregroundDim
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 11
+                            }
+                        }
+                    }
+
+                    // botão do mixer (embaixo da lista)
+                    QuickToggle {
+                        Layout.fillWidth: true
+                        Layout.topMargin: 4
+                        glyph: "\u{F066A}" // nf-md-tune (mixer)
+                        label: "Mixer de aplicativos"
+                        active: ControlCenter.mixerOpen
+                        onActivated: ControlCenter.mixerOpen = !ControlCenter.mixerOpen
                     }
                 }
             }
@@ -907,6 +982,7 @@ PopupWindow {
                         onTextChanged: notesSave.restart()
                     }
                 }
+
             }
             }
 

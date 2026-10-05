@@ -46,7 +46,9 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
   Caffeine, Bluetooth, **Gravador** — grava a tela e acende durante a gravação,
   **Câmera** — preview da webcam) + Sessão (Bloquear, Sair, Reiniciar,
   Desligar); **Levels** com sliders de Saída/Microfone/Brilho, mute no ícone e
-  **seletor de dispositivos de áudio** na setinha; linha de mídia (MPRIS).
+  **seletor de dispositivos de áudio** na setinha; **mixer de aplicativos**
+  (o botão troca os Levels pela lista dos apps tocando som, com slider e mute
+  por app); linha de mídia (MPRIS).
 - **Música**: passando o mouse na ilha (com música tocando) abre um painel com
   capa e **brilho da cor do álbum**, controles (anterior/play/próxima), seek,
   **saída de áudio**, **mixer por aplicativo** e **letras** (lrclib, com
@@ -171,6 +173,7 @@ qs -c lumen ipc call notifications toggle     # painel de notificações
 qs -c lumen ipc call notifications toggleDnd  # não perturbe
 qs -c lumen ipc call controlcenter toggle     # control center
 qs -c lumen ipc call controlcenter setTab 1   # 0=CC, 1=Dashboard, 2=Clipboard
+qs -c lumen ipc call controlcenter toggleMixer  # mixer de aplicativos (no lugar dos Levels)
 qs -c lumen ipc call workspaces switchToIndex 1
 qs -c lumen ipc call brightness set 40        # brilho (DDC/CI)
 qs -c lumen ipc call weather refresh

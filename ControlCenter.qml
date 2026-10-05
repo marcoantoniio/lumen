@@ -11,6 +11,8 @@ Singleton {
     id: root
 
     property bool open: false
+    // Mixer de aplicativos aberto no lugar dos Levels (botão no CC)
+    property bool mixerOpen: false
     property int tab: 0
     property bool caffeineEnabled: false
     property bool nightLightAvailable: false
@@ -45,11 +47,14 @@ Singleton {
             Notifications.centerOpen = false;
             Webcam.open = false;
             RecentFiles.open = false;
+        } else {
+            mixerOpen = false;
         }
         open = !open;
     }
 
     function close() {
+        mixerOpen = false;
         open = false;
     }
 
@@ -61,6 +66,8 @@ Singleton {
         function close(): void { root.close(); }
         function setTab(n: int): void { root.tab = n; }
         function getTab(): int { return root.tab; }
+        function toggleMixer(): void { root.mixerOpen = !root.mixerOpen; }
+        function getMixer(): bool { return root.mixerOpen; }
         function toggleCaffeine(): void { root.caffeineEnabled = !root.caffeineEnabled; }
         function getCaffeine(): bool { return root.caffeineEnabled; }
         function toggleNightLight(): void { root.toggleNightLight(); }

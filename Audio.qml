@@ -94,6 +94,18 @@ Singleton {
         objects: root.streams
     }
 
+    // streams de reprodução (apps tocando som) — mixer de aplicativos
+    readonly property var playbackStreams: {
+        const out = [];
+        for (let i = 0; i < root.streams.length; ++i) {
+            const n = root.streams[i];
+            const props = n.properties || ({});
+            if (props["media.class"] === "Stream/Output/Audio")
+                out.push(n);
+        }
+        return out;
+    }
+
     function streamName(node) {
         if (!node)
             return "";
