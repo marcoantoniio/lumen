@@ -28,11 +28,19 @@ PopupWindow {
                    ? anchorItem.y + anchorItem.height - 1
                    : (panelWindow ? panelWindow.height + Theme.barMargin : 0)
     implicitWidth: panelWidth
-    implicitHeight: Math.min(540, frame.implicitHeight)
+    // Altura congelada ao abrir: fechar uma notificação (ou chegar nova) não
+    // pode redimensionar a janela no Wayland (glicha e o painel pula/fecha).
+    property real frozenHeight: 0
+    implicitHeight: frozenHeight > 0 ? frozenHeight : Math.min(540, frame.implicitHeight)
     color: "transparent"
     visible: Notifications.centerOpen
 
     onVisibleChanged: {
+        // congela a altura do conteúdo atual (sem redimensionar enquanto aberto)
+        if (visible) {
+            frozenHeight = 0;
+            Qt.callLater(() => frozenHeight = Math.min(540, frame.implicitHeight));
+        }
         // Qt.callLater evita binding loop no visible (bug de flicker)
         if (!visible && Notifications.centerOpen)
             Qt.callLater(() => Notifications.centerOpen = false);
@@ -184,6 +192,8 @@ PopupWindow {
             // ---- estado vazio ----
             Text {
                 Layout.fillWidth: true
+                Layout.fillHeight: true
+                verticalAlignment: Text.AlignVCenter
                 visible: Notifications.filtered.length === 0
                 text: Notifications.activeCategory === ""
                       ? "Nenhuma notificação"
@@ -199,6 +209,7 @@ PopupWindow {
             // ---- lista ----
             Flickable {
                 Layout.fillWidth: true
+                Layout.fillHeight: true
                 Layout.preferredHeight: Math.min(400, list.implicitHeight)
                 visible: Notifications.filtered.length > 0
                 contentHeight: list.implicitHeight
