@@ -222,8 +222,9 @@ PanelWindow {
         width: Math.max(baseWidth + reveal * (sideWidth * 2 + Theme.spacing * 2),
                         animatedPanelWidth)
 
-        bottomLeftRadius: (panelTargetWidth > 0 || Island.square) ? 0 : Theme.barRadius
-        bottomRightRadius: (panelTargetWidth > 0 || Island.square) ? 0 : Theme.barRadius
+        // Cantos de baixo retos só com painel aberto (ou no formato quadrado)
+        bottomLeftRadius: (panelTargetWidth > baseWidth || Island.square) ? 0 : Theme.barRadius
+        bottomRightRadius: (panelTargetWidth > baseWidth || Island.square) ? 0 : Theme.barRadius
 
         Behavior on bottomLeftRadius {
             NumberAnimation { duration: 400; easing.type: Easing.OutCubic }
