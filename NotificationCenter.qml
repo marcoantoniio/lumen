@@ -6,10 +6,11 @@
 //   qs -c lumen ipc call notifications toggle
 
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 
-PopupWindow {
+PanelWindow {
     id: center
 
     property var panelWindow: null
@@ -20,37 +21,172 @@ PopupWindow {
 
     readonly property int panelWidth: Theme.notificationPanelWidth
 
-    anchor.window: panelWindow
-    anchor.rect.x: anchorItem
-                   ? anchorItem.x + (anchorItem.width - panelWidth) / 2
-                   : (panelWindow ? panelWindow.width - panelWidth - Theme.barMargin : 0)
-    anchor.rect.y: anchorItem
-                   ? anchorItem.y + anchorItem.height - 1
-                   : (panelWindow ? panelWindow.height + Theme.barMargin : 0)
-    implicitWidth: panelWidth
-    // Altura congelada ao abrir: fechar uma notificação (ou chegar nova) não
-    // pode redimensionar a janela no Wayland (glicha e o painel pula/fecha).
-    property real frozenHeight: 0
-    implicitHeight: frozenHeight > 0 ? frozenHeight : Math.min(540, frame.implicitHeight)
+    // Layer surface sempre mapeada (pré-mapeada): a troca de painel não tem
+    // "blink" — a moldura é que cresce/diminui (0 = fechado, invisível, e a
+    // máscara deixa os cliques passarem).
+    screen: panelWindow ? panelWindow.screen : null
+    anchors {
+        top: true
+        left: true
+        right: true
+    }
+    margins {
+        // encosta na ilha (fundo da pílula - 1)
+        top: Island.square ? 38 : 45
+    }
+    implicitHeight: Theme.panelMorphHeight
     color: "transparent"
-    visible: Notifications.centerOpen
+    exclusionMode: ExclusionMode.Ignore
+    aboveWindows: true
+    mask: Region { item: frame }
 
-    onVisibleChanged: {
-        // congela a altura do conteúdo atual (sem redimensionar enquanto aberto)
-        if (visible) {
+    // Altura congelada ao abrir: fechar uma notificação (ou chegar nova) não
+    // pode mudar a altura da moldura enquanto aberto (glicha e o painel pula).
+    property real frozenHeight: 0
+    // ---- geometria da moldura (animada) ----
+    // Abertura: cresce de 0 até a altura final (saindo da ilha).
+    // Troca: a moldura "morfa" do tamanho do painel antigo até o tamanho
+    // deste — a janela se transforma, sem fade nem piscar.
+    readonly property bool wanted: Notifications.centerOpen
+    property bool shown: false
+    readonly property real fullW: center.panelWidth
+    readonly property real fullH: frozenHeight > 0 ? frozenHeight
+        : Math.min(Theme.panelMorphHeight, frame.implicitHeight)
+    property real frameW: fullW
+    property real frameH: 0
+
+    // Sempre mapeada (pré-mapeada) — a moldura em 0 é que a esconde
+    visible: true
+
+    NumberAnimation {
+        id: morphW
+
+        target: center
+        property: "frameW"
+        duration: 400
+        easing.type: Easing.OutCubic
+    }
+
+    NumberAnimation {
+        id: morphH
+
+        target: center
+        property: "frameH"
+        duration: 400
+        easing.type: Easing.OutCubic
+    }
+
+    // Troca: o painel que entra incrementa a sequência e define o alvo do
+    // morph; quem está saindo acompanha NA MESMA hora (sem atraso de frame —
+    // senão a janela antiga deixa um "rasto" aparecendo em volta da nova).
+    property bool switchMorph: false
+
+    Connections {
+        target: Island
+
+        function onSwitchSeqChanged() {
+            if (!center.shown || center.wanted)
+                return;
+            // Troca: este painel sai NA HORA — o que entra já nasce no mesmo
+            // tamanho e se transforma. Nunca há duas janelas juntas.
+            center.switchMorph = true;
+            Island.panelsShown -= 1;
+            center.shown = false;
+        }
+    }
+
+    onWantedChanged: {
+        if (wanted) {
+            if (!shown) {
+                const switching = Island.panelsShown > 0;
+                Island.panelsShown += 1;
+                center.switchMorph = false;
+                morphW.stop();
+                morphH.stop();
+                if (switching) {
+                    // Troca: nasce no tamanho do painel antigo e morfa até o seu
+                    center.frameW = Island.lastPanelWidth > 0 ? Island.lastPanelWidth : center.fullW;
+                    center.frameH = Island.lastPanelHeight > 0 ? Island.lastPanelHeight : center.fullH;
+                    Island.switchTargetWidth = center.fullW;
+                    Island.switchTargetHeight = center.fullH;
+                    // Avisa quem está saindo para acompanhar o morph agora
+                    Island.switchSeq += 1;
+                } else {
+                    // Abertura normal: cresce de 0 (saindo da ilha)
+                    center.frameW = center.fullW;
+                    center.frameH = 0;
+                }
+                shown = true;
+                morphW.from = center.frameW;
+                morphW.to = center.fullW;
+                morphH.from = center.frameH;
+                morphH.to = center.fullH;
+                morphW.start();
+                morphH.start();
+            } else {
+                // Reabriu durante a saída: volta ao tamanho final
+                morphW.stop();
+                morphH.stop();
+                morphW.from = center.frameW;
+                morphW.to = center.fullW;
+                morphH.from = center.frameH;
+                morphH.to = center.fullH;
+                morphW.start();
+                morphH.start();
+            }
+        } else if (shown) {
+            // Guarda o tamanho atual para a próxima troca começar daqui
+            Island.lastPanelWidth = center.frameW;
+            Island.lastPanelHeight = center.frameH;
+            Qt.callLater(function() {
+                if (center.wanted || !center.shown)
+                    return;
+                if (center.switchMorph) {
+                    // A troca já disparou o morph + o hide (Connections)
+                    center.switchMorph = false;
+                } else {
+                    // Fechou: recolhe para a ilha
+                    morphW.stop();
+                    morphH.stop();
+                    morphH.from = center.frameH;
+                    morphH.to = 0;
+                    morphH.start();
+                    hideDelay.restart();
+                }
+            });
+        }
+    }
+
+    Timer {
+        id: hideDelay
+
+        interval: 440
+        onTriggered: {
+            if (!center.wanted && center.shown) {
+                Island.panelsShown -= 1;
+                center.shown = false;
+            }
+        }
+    }
+
+    onShownChanged: {
+        // congela a altura do conteúdo atual (sem mudar a altura enquanto aberto)
+        if (shown) {
             frozenHeight = 0;
             Qt.callLater(() => frozenHeight = Math.min(540, frame.implicitHeight));
         }
-        // Qt.callLater evita binding loop no visible (bug de flicker)
-        if (!visible && Notifications.centerOpen)
-            Qt.callLater(() => Notifications.centerOpen = false);
     }
 
     Rectangle {
         id: frame
 
-        anchors.fill: parent
+        // Tamanho animado: cresce na abertura e "morfa" na troca de painel
+        width: Island.pillWidth
+        height: center.shown ? center.frameH : 0
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
         implicitHeight: column.implicitHeight + 24
+        clip: true
         radius: Theme.radius
         topLeftRadius: 0
         topRightRadius: 0
@@ -61,9 +197,6 @@ PopupWindow {
         HoverHandler {
             onHoveredChanged: Notifications.panelHovered = hovered
         }
-
-        opacity: center.visible ? 1 : 0
-        scale: center.visible ? 1 : 0.96
 
         // Junção com a ilha: esconde a borda de cima (sem linha divisória)
         Rectangle {
@@ -78,27 +211,17 @@ PopupWindow {
             color: "#000000"
         }
 
-        Behavior on opacity {
-            NumberAnimation { duration: 340; easing.type: Easing.OutQuint }
-        }
-        Behavior on scale {
-            NumberAnimation { duration: 340; easing.type: Easing.OutQuint }
-        }
-        transform: Translate {
-            y: center.visible ? 0 : -12
-
-            Behavior on y {
-                NumberAnimation { duration: 340; easing.type: Easing.OutQuint }
-            }
-        }
-
         ColumnLayout {
             id: column
 
+            // Tamanho fixo no valor final (a moldura encolhe por cima, com clip)
             anchors {
-                fill: parent
-                margins: 12
+                top: parent.top
+                horizontalCenter: parent.horizontalCenter
+                topMargin: 12
             }
+            width: center.fullW - 24
+            height: center.fullH - 24
             spacing: 10
 
             // ---- cabeçalho ----

@@ -43,7 +43,9 @@ PanelWindow {
     // Pequeno atraso ao sair, para não colapsar por tremor de borda
     Timer {
         id: collapseTimer
-        interval: 160
+        // Mesmo atraso dos timers de fechamento: o recolhimento da ilha começa
+        // junto com o fechamento do painel (tudo vira uma coisa só).
+        interval: 350
         onTriggered: bar.expanded = false
     }
 
@@ -165,15 +167,21 @@ PanelWindow {
         property real reveal: bar.expanded ? 1 : 0
 
         Behavior on reveal {
+            // Mesmo tempo/curva do fechamento do painel: a ilha recolhe junto
             NumberAnimation {
-                duration: 260
-                easing.type: Easing.OutQuint
+                duration: 400
+                easing.type: Easing.OutCubic
             }
         }
 
         // Largura simétrica: os dois lados usam a largura do cluster maior,
         // mantendo o relógio centralizado e sem encostar nos botões.
         readonly property real sideWidth: Math.max(leftRow.implicitWidth, rightRow.implicitWidth)
+
+        // Largura base da pílula (relógio + padding; no quadrado, o mínimo fixo)
+        readonly property real baseWidth: Island.square
+            ? Math.max(Theme.pillIdleWidth, centerWidth + Theme.pillPadding * 2)
+            : centerWidth + Theme.pillPadding * 2
 
         // Quando um painel está aberto, a ilha cresce até a largura dele
         // e encosta no painel (cantos de baixo retos).
@@ -182,14 +190,16 @@ PanelWindow {
             : (Notifications.centerOpen ? Theme.notificationPanelWidth
             : (Music.panelOpen ? Theme.musicPanelWidth
             : (RecentFiles.open ? Theme.recentPanelWidth
-            : (Webcam.open && bar.screen === Webcam.screen ? Theme.cameraPanelWidth : 0))))
+            : (Webcam.open && bar.screen === Webcam.screen ? Theme.cameraPanelWidth : baseWidth))))
 
         property real animatedPanelWidth: panelTargetWidth
 
         Behavior on animatedPanelWidth {
+            // Mesmo tempo/curva do morph dos painéis: a ilha encolhe junto com
+            // o fechamento do painel (não antes).
             NumberAnimation {
-                duration: 380
-                easing.type: Easing.OutQuint
+                duration: 400
+                easing.type: Easing.OutCubic
             }
         }
 
@@ -207,22 +217,19 @@ PanelWindow {
             : centerMode === "music" ? nowPlaying.implicitWidth
             : clockItem.implicitWidth
 
-        // parada: 175px fixos no formato quadrado; no redondo, o tamanho de
-        // sempre (relógio + padding). O hover soma os elementos laterais.
-        width: Math.max((Island.square
-                         ? Math.max(Theme.pillIdleWidth, centerWidth + Theme.pillPadding * 2)
-                         : centerWidth + Theme.pillPadding * 2)
-                        + reveal * (sideWidth * 2 + Theme.spacing * 2),
+        // parada: a largura base; o hover soma os elementos laterais. Quando um
+        // painel está aberto, a largura dele domina (e anima junto com ele).
+        width: Math.max(baseWidth + reveal * (sideWidth * 2 + Theme.spacing * 2),
                         animatedPanelWidth)
 
         bottomLeftRadius: (panelTargetWidth > 0 || Island.square) ? 0 : Theme.barRadius
         bottomRightRadius: (panelTargetWidth > 0 || Island.square) ? 0 : Theme.barRadius
 
         Behavior on bottomLeftRadius {
-            NumberAnimation { duration: 320; easing.type: Easing.OutQuint }
+            NumberAnimation { duration: 400; easing.type: Easing.OutCubic }
         }
         Behavior on bottomRightRadius {
-            NumberAnimation { duration: 320; easing.type: Easing.OutQuint }
+            NumberAnimation { duration: 400; easing.type: Easing.OutCubic }
         }
 
         HoverHandler {
@@ -340,6 +347,14 @@ PanelWindow {
                 CategoryButtons {}
             }
         }
+    }
+
+    // Largura atual da pílula, compartilhada com os painéis: a moldura deles
+    // acompanha a ilha (abre e fecha colapsando junto com ela).
+    Binding {
+        target: Island
+        property: "pillWidth"
+        value: pill.width
     }
 
     // Só a pílula recebe cliques; o resto da faixa é click-through

@@ -5,11 +5,12 @@
 // para não segurar a câmera quando fechado.
 
 import Quickshell
+import Quickshell.Wayland
 import QtMultimedia
 import QtQuick
 import QtQuick.Layouts
 
-PopupWindow {
+PanelWindow {
     id: panel
 
     property var panelWindow: null
@@ -25,17 +26,149 @@ PopupWindow {
     property var selectedDevice: null
     property string cameraError: ""
 
-    anchor.window: panelWindow
-    anchor.rect.x: anchorItem
-                   ? anchorItem.x + (anchorItem.width - panelWidth) / 2
-                   : (panelWindow ? panelWindow.width - panelWidth - Theme.barMargin : 0)
-    anchor.rect.y: anchorItem
-                   ? anchorItem.y + anchorItem.height - 1
-                   : (panelWindow ? panelWindow.height + Theme.barMargin : 0)
-    implicitWidth: panelWidth
-    implicitHeight: frame.implicitHeight
+    // Layer surface sempre mapeada (pré-mapeada): a troca de painel não tem
+    // "blink" — a moldura é que cresce/diminui (0 = fechado, invisível, e a
+    // máscara deixa os cliques passarem).
+    screen: panelWindow ? panelWindow.screen : null
+    anchors {
+        top: true
+        left: true
+        right: true
+    }
+    margins {
+        // encosta na ilha (fundo da pílula - 1)
+        top: Island.square ? 38 : 45
+    }
+    implicitHeight: Theme.panelMorphHeight
     color: "transparent"
-    visible: Webcam.open && onCameraScreen && !ControlCenter.open && !Notifications.centerOpen && !Music.panelOpen
+    exclusionMode: ExclusionMode.Ignore
+    aboveWindows: true
+    mask: Region { item: frame }
+    // ---- geometria da moldura (animada) ----
+    // Abertura: cresce de 0 até a altura final (saindo da ilha).
+    // Troca: a moldura "morfa" do tamanho do painel antigo até o tamanho
+    // deste — a janela se transforma, sem fade nem piscar.
+    readonly property bool wanted: Webcam.open && onCameraScreen
+        && !ControlCenter.open && !Notifications.centerOpen && !Music.panelOpen
+    property bool shown: false
+    readonly property real fullW: panel.panelWidth
+    readonly property real fullH: Math.min(Theme.panelMorphHeight, frame.implicitHeight)
+    property real frameW: fullW
+    property real frameH: 0
+
+    // Sempre mapeada (pré-mapeada) — a moldura em 0 é que a esconde
+    visible: true
+
+    NumberAnimation {
+        id: morphW
+
+        target: panel
+        property: "frameW"
+        duration: 400
+        easing.type: Easing.OutCubic
+    }
+
+    NumberAnimation {
+        id: morphH
+
+        target: panel
+        property: "frameH"
+        duration: 400
+        easing.type: Easing.OutCubic
+    }
+
+    // Troca: o painel que entra incrementa a sequência e define o alvo do
+    // morph; quem está saindo acompanha NA MESMA hora (sem atraso de frame —
+    // senão a janela antiga deixa um "rasto" aparecendo em volta da nova).
+    property bool switchMorph: false
+
+    Connections {
+        target: Island
+
+        function onSwitchSeqChanged() {
+            if (!panel.shown || panel.wanted)
+                return;
+            // Troca: este painel sai NA HORA — o que entra já nasce no mesmo
+            // tamanho e se transforma. Nunca há duas janelas juntas.
+            panel.switchMorph = true;
+            Island.panelsShown -= 1;
+            panel.shown = false;
+        }
+    }
+
+    onWantedChanged: {
+        if (wanted) {
+            if (!shown) {
+                const switching = Island.panelsShown > 0;
+                Island.panelsShown += 1;
+                panel.switchMorph = false;
+                morphW.stop();
+                morphH.stop();
+                if (switching) {
+                    // Troca: nasce no tamanho do painel antigo e morfa até o seu
+                    panel.frameW = Island.lastPanelWidth > 0 ? Island.lastPanelWidth : panel.fullW;
+                    panel.frameH = Island.lastPanelHeight > 0 ? Island.lastPanelHeight : panel.fullH;
+                    Island.switchTargetWidth = panel.fullW;
+                    Island.switchTargetHeight = panel.fullH;
+                    // Avisa quem está saindo para acompanhar o morph agora
+                    Island.switchSeq += 1;
+                } else {
+                    // Abertura normal: cresce de 0 (saindo da ilha)
+                    panel.frameW = panel.fullW;
+                    panel.frameH = 0;
+                }
+                shown = true;
+                morphW.from = panel.frameW;
+                morphW.to = panel.fullW;
+                morphH.from = panel.frameH;
+                morphH.to = panel.fullH;
+                morphW.start();
+                morphH.start();
+            } else {
+                // Reabriu durante a saída: volta ao tamanho final
+                morphW.stop();
+                morphH.stop();
+                morphW.from = panel.frameW;
+                morphW.to = panel.fullW;
+                morphH.from = panel.frameH;
+                morphH.to = panel.fullH;
+                morphW.start();
+                morphH.start();
+            }
+        } else if (shown) {
+            // Guarda o tamanho atual para a próxima troca começar daqui
+            Island.lastPanelWidth = panel.frameW;
+            Island.lastPanelHeight = panel.frameH;
+            Qt.callLater(function() {
+                if (panel.wanted || !panel.shown)
+                    return;
+                if (panel.switchMorph) {
+                    // A troca já disparou o morph + o hide (Connections)
+                    panel.switchMorph = false;
+                } else {
+                    // Fechou: recolhe para a ilha
+                    morphW.stop();
+                    morphH.stop();
+                    morphH.from = panel.frameH;
+                    morphH.to = 0;
+                    morphH.start();
+                    hideDelay.restart();
+                }
+            });
+        }
+    }
+
+    Timer {
+        id: hideDelay
+
+        interval: 440
+        onTriggered: {
+            if (!panel.wanted && panel.shown) {
+                Island.panelsShown -= 1;
+                panel.shown = false;
+            }
+        }
+    }
 
     // Escolhe a câmera quando a lista assíncrona do MediaDevices chega (ou muda)
     function pickCamera(): void {
@@ -45,11 +178,9 @@ PopupWindow {
             selectedDevice = cameras.length > 0 ? cameras[0] : null;
     }
 
-    onVisibleChanged: {
-        pickCamera();
-        // Qt.callLater evita binding loop no visible (bug de flicker)
-        if (!visible && Webcam.open)
-            Qt.callLater(() => Webcam.open = false);
+    onShownChanged: {
+        if (shown)
+            pickCamera();
     }
 
     onCamerasChanged: pickCamera()
@@ -64,7 +195,7 @@ PopupWindow {
         CaptureSession {
             camera: Camera {
                 cameraDevice: panel.selectedDevice
-                active: panel.visible
+                active: panel.shown
 
                 onErrorStringChanged: panel.cameraError = errorString
             }
@@ -85,39 +216,26 @@ PopupWindow {
     Loader {
         id: sessionLoader
 
-        active: panel.visible
+        active: panel.shown
         sourceComponent: sessionComp
     }
 
     Rectangle {
         id: frame
 
-        anchors.fill: parent
+        // Tamanho animado: cresce na abertura e "morfa" na troca de painel
+        width: Island.pillWidth
+        height: panel.shown ? panel.frameH : 0
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
         implicitHeight: column.implicitHeight + 24
+        clip: true
         radius: Theme.radius
         topLeftRadius: 0
         topRightRadius: 0
         color: Theme.surface
         border.width: 1
         border.color: Theme.border
-
-        opacity: panel.visible ? 1 : 0
-
-        scale: panel.visible ? 1 : 0.96
-
-        Behavior on opacity {
-            NumberAnimation { duration: 340; easing.type: Easing.OutQuint }
-        }
-        Behavior on scale {
-            NumberAnimation { duration: 340; easing.type: Easing.OutQuint }
-        }
-        transform: Translate {
-            y: panel.visible ? 0 : -12
-
-            Behavior on y {
-                NumberAnimation { duration: 340; easing.type: Easing.OutQuint }
-            }
-        }
 
         // Junção com a ilha
         Rectangle {
@@ -135,10 +253,14 @@ PopupWindow {
         ColumnLayout {
             id: column
 
+            // Tamanho fixo no valor final (a moldura encolhe por cima, com clip)
             anchors {
-                fill: parent
-                margins: 12
+                top: parent.top
+                horizontalCenter: parent.horizontalCenter
+                topMargin: 12
             }
+            width: panel.fullW - 24
+            height: panel.fullH - 24
             spacing: 8
 
             RowLayout {
@@ -174,7 +296,7 @@ PopupWindow {
                     id: videoOutLoader
 
                     anchors.fill: parent
-                    active: panel.visible
+                    active: panel.shown
                     sourceComponent: videoComp
                 }
 

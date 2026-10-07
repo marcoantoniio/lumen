@@ -49,6 +49,15 @@ Singleton {
     readonly property int cameraPanelWidth: 440
     readonly property int recentPanelWidth: 420
 
+    // Tamanho máximo da moldura no morph de troca: as janelas dos painéis têm
+    // esse tamanho fixo (transparentes + máscara) — a moldura interna é que
+    // cresce/diminui, sem ser cortada pela janela.
+    readonly property int panelMorphWidth: 540
+    readonly property int panelMorphHeight: 540
+    // Alturas próprias dos painéis de altura fixa
+    readonly property int controlCenterPanelHeight: 464
+    readonly property int recentPanelHeight: 352
+
     // Tela do painel da câmera (nome do monitor: "DP-1", "HDMI-A-1", ...).
     // Se o nome não existir no seu setup, cai na primeira tela.
     readonly property string cameraScreenName: "DP-1"
