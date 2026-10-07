@@ -197,6 +197,8 @@ PanelWindow {
         anchors.top: parent.top
         clip: true
         radius: Theme.radius
+        // Cantos de cima retos: a moldura é a continuação da ilha enquanto
+        // está na tela (a ilha só volta a arredondar quando ela recolhe).
         topLeftRadius: 0
         topRightRadius: 0
         color: Theme.surface
@@ -229,6 +231,7 @@ PanelWindow {
                 topMargin: 12
                 leftMargin: 14
             }
+            opacity: panel.frameH < 120 ? 0 : 1
             text: "Recentes"
             color: Theme.foregroundDim
             font.family: Theme.fontFamily
@@ -244,6 +247,7 @@ PanelWindow {
                 topMargin: 8
                 rightMargin: 14
             }
+            opacity: panel.frameH < 120 ? 0 : 1
             text: "✕"
             color: closeArea.containsMouse ? Theme.foreground : Theme.foregroundDim
             font.family: Theme.fontFamily
@@ -272,6 +276,7 @@ PanelWindow {
                 rightMargin: 12
                 bottomMargin: 12
             }
+            opacity: panel.frameH < 120 ? 0 : 1
             clip: true
             spacing: 2
             model: RecentFiles.files

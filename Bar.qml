@@ -222,9 +222,13 @@ PanelWindow {
         width: Math.max(baseWidth + reveal * (sideWidth * 2 + Theme.spacing * 2),
                         animatedPanelWidth)
 
-        // Cantos de baixo retos só com painel aberto (ou no formato quadrado)
-        bottomLeftRadius: (panelTargetWidth > baseWidth || Island.square) ? 0 : Theme.barRadius
-        bottomRightRadius: (panelTargetWidth > baseWidth || Island.square) ? 0 : Theme.barRadius
+        // Cantos de baixo: retos enquanto há painel na tela (aberto ou
+        // colapsando junto — a moldura segue embaixo como peça única, sem
+        // degrau quadrado); arredondam quando o painel termina de recolher.
+        bottomLeftRadius: (panelTargetWidth > baseWidth || Island.panelsShown > 0 || Island.square)
+            ? 0 : Theme.barRadius
+        bottomRightRadius: (panelTargetWidth > baseWidth || Island.panelsShown > 0 || Island.square)
+            ? 0 : Theme.barRadius
 
         Behavior on bottomLeftRadius {
             NumberAnimation { duration: 400; easing.type: Easing.OutCubic }

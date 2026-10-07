@@ -295,6 +295,8 @@ PanelWindow {
         implicitHeight: column.height + 24
         clip: true
         radius: Theme.radius
+        // Cantos de cima retos: a moldura é a continuação da ilha enquanto
+        // está na tela (a ilha só volta a arredondar quando ela recolhe).
         topLeftRadius: 0
         topRightRadius: 0
         color: Theme.surface
@@ -325,7 +327,13 @@ PanelWindow {
             }
             width: panel.fullW - 24
             height: implicitHeight
+            // Some antes da moldura virar um resto fino (sem sobra na ilha)
+            opacity: panel.frameH < 120 ? 0 : 1
             spacing: 8
+
+            Behavior on opacity {
+                NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
+            }
 
             // ---- cabeçalho: capa com brilho + infos ----
             RowLayout {
