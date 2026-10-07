@@ -65,8 +65,8 @@ Row {
             paused: Recorder.paused
             loops: Animation.Infinite
 
-            NumberAnimation { to: 0.35; duration: 620; easing.type: Easing.InOutSine }
-            NumberAnimation { to: 1.0; duration: 620; easing.type: Easing.InOutSine }
+            NumberAnimation { from: 1.0; to: 0.35; duration: 620; easing.type: Easing.InOutSine }
+            NumberAnimation { from: 0.35; to: 1.0; duration: 620; easing.type: Easing.InOutSine }
         }
     }
 

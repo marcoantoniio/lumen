@@ -47,8 +47,10 @@ Row {
                     running: Music.playing
                     loops: Animation.Infinite
 
-                    NumberAnimation { to: 14; duration: 360 + index * 90; easing.type: Easing.InOutSine }
-                    NumberAnimation { to: 4; duration: 360 + index * 90; easing.type: Easing.InOutSine }
+                    // from explícito: sem ele o driver de animação assume
+                    // from=0 ao (re)iniciar e a barra cai a 0 (o "salto")
+                    NumberAnimation { from: 4; to: 14; duration: 260 + index * 60; easing.type: Easing.InOutSine }
+                    NumberAnimation { from: 14; to: 4; duration: 260 + index * 60; easing.type: Easing.InOutSine }
                 }
             }
         }
