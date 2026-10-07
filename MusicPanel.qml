@@ -175,8 +175,20 @@ PopupWindow {
 
         opacity: panel.visible ? 1 : 0
 
+        scale: panel.visible ? 1 : 0.96
+
         Behavior on opacity {
-            NumberAnimation { duration: 140; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 340; easing.type: Easing.OutQuint }
+        }
+        Behavior on scale {
+            NumberAnimation { duration: 340; easing.type: Easing.OutQuint }
+        }
+        transform: Translate {
+            y: panel.visible ? 0 : -12
+
+            Behavior on y {
+                NumberAnimation { duration: 340; easing.type: Easing.OutQuint }
+            }
         }
 
         // Junção com a ilha: esconde a borda de cima

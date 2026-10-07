@@ -24,7 +24,7 @@ Item {
         visible: opacity > 0.01
 
         Behavior on opacity {
-            NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 240; easing.type: Easing.OutQuint }
         }
 
         ShapePath {
@@ -72,13 +72,13 @@ Item {
         radius: 5
         color: root.dotColor
         opacity: root.enabled ? (root.selected ? 0.25 : 1) : 0.4
-        scale: circleArea.containsMouse ? 1.2 : 1
+        scale: circleArea.pressed ? 0.85 : (circleArea.containsMouse ? 1.2 : 1)
 
         Behavior on scale {
-            NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 170; easing.type: Easing.OutQuint }
         }
         Behavior on opacity {
-            NumberAnimation { duration: 150 }
+            NumberAnimation { duration: 240; easing.type: Easing.OutQuint }
         }
     }
 

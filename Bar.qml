@@ -155,10 +155,10 @@ PanelWindow {
         clip: true
 
         Behavior on y {
-            NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 260; easing.type: Easing.OutQuint }
         }
         Behavior on radius {
-            NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 260; easing.type: Easing.OutQuint }
         }
 
         // 0 = colapsado, 1 = expandido (animado)
@@ -166,8 +166,8 @@ PanelWindow {
 
         Behavior on reveal {
             NumberAnimation {
-                duration: 220
-                easing.type: Easing.OutCubic
+                duration: 260
+                easing.type: Easing.OutQuint
             }
         }
 
@@ -188,8 +188,8 @@ PanelWindow {
 
         Behavior on animatedPanelWidth {
             NumberAnimation {
-                duration: 220
-                easing.type: Easing.OutCubic
+                duration: 380
+                easing.type: Easing.OutQuint
             }
         }
 
@@ -219,10 +219,10 @@ PanelWindow {
         bottomRightRadius: (panelTargetWidth > 0 || Island.square) ? 0 : Theme.barRadius
 
         Behavior on bottomLeftRadius {
-            NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 320; easing.type: Easing.OutQuint }
         }
         Behavior on bottomRightRadius {
-            NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 320; easing.type: Easing.OutQuint }
         }
 
         HoverHandler {

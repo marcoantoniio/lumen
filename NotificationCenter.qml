@@ -63,7 +63,7 @@ PopupWindow {
         }
 
         opacity: center.visible ? 1 : 0
-        scale: center.visible ? 1 : 0.97
+        scale: center.visible ? 1 : 0.96
 
         // Junção com a ilha: esconde a borda de cima (sem linha divisória)
         Rectangle {
@@ -79,10 +79,17 @@ PopupWindow {
         }
 
         Behavior on opacity {
-            NumberAnimation { duration: 140; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 340; easing.type: Easing.OutQuint }
         }
         Behavior on scale {
-            NumberAnimation { duration: 140; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 340; easing.type: Easing.OutQuint }
+        }
+        transform: Translate {
+            y: center.visible ? 0 : -12
+
+            Behavior on y {
+                NumberAnimation { duration: 340; easing.type: Easing.OutQuint }
+            }
         }
 
         ColumnLayout {
