@@ -57,8 +57,9 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
   com semana atual + mini-mês, **clima** com previsão horária (umidade, vento,
   chuva) e **Sistema** com CPU, RAM, GPU, temperatura, disco e uptime — tudo
   com barrinhas.
-- **Clipboard & Notes**: histórico do clipboard (clique copia de volta) e
-  notas persistentes.
+- **Clipboard & Notes**: histórico do clipboard (clique esquerdo copia de
+  volta, direito remove) e notas (várias, com título, salvas em
+  `~/.local/share/lumen/notes.json`).
 - **Rodapé** com atalhos: Terminal, Arquivos, Navegador, Clipboard e
   Configurações.
 
@@ -92,7 +93,7 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
 | `ddcutil` | brilho de monitor externo (DDC/CI) |
 | `nvidia-smi` / `lm_sensors` | GPU e temperatura no Dashboard |
 | `kitty` | botão do terminal no rodapé |
-| Klipper (KDE) | histórico do clipboard |
+| `wl-clipboard` | histórico do clipboard (wl-paste/wl-copy) |
 | `gammastep` | botão Night Light |
 | `network-manager-applet` | ícone de rede na bandeja (`nm-applet --indicator`, iniciar junto com a sessão) |
 | `qt6-multimedia` | preview da câmera (botão Câmera) |
@@ -227,6 +228,7 @@ As cores seguem o formato `#AARRGGBB` do Qt (o `AA` é a transparência).
 | `ControlCenter.qml`, `ControlCenterPanel.qml`, `PanelTab.qml`, `QuickToggle.qml`, `LevelRow.qml`, `LevelSlider.qml`, `DeviceMenu.qml`, `FooterIcon.qml` | Control Center |
 | `CalendarCard.qml`, `WeatherCard.qml`, `SystemCard.qml`, `Weather.qml`, `Greeting.qml` | Dashboard |
 | `Clipboard.qml` | histórico do clipboard |
+| `Notes.qml` | notas (persistidas em `~/.local/share/lumen`) |
 | `Brightness.qml` | brilho DDC/CI |
 | `Workspaces.qml`, `Umbriel.qml` | desktops (KWin + Umbriel) |
 | `Notifications.qml`, `NotificationCenter.qml`, `NotificationPopup.qml`, `NotificationPopups.qml`, `FilterTab.qml` | notificações |
@@ -244,8 +246,8 @@ As cores seguem o formato `#AARRGGBB` do Qt (o `AA` é a transparência).
   nativo ganha — sob Umbriel (ou sem plasmashell) funciona normalmente.
 - **Workspaces**: usa KWin via D-Bus; sob Umbriel cai automaticamente para o
   IPC do compositor.
-- **Clipboard**: o histórico vem do Klipper (KDE); em outros compositores a aba
-  mostra "indisponível".
+- **Clipboard**: o histórico usa o `wl-clipboard` (`wl-paste --watch` + `wl-copy`);
+  sem ele instalado, a aba mostra "indisponível".
 - **Brilho**: depende do monitor suportar DDC/CI.
 - O menu de dispositivos de áudio não fecha ao clicar fora (limitação de popups
   aninhados no Wayland); feche clicando na setinha ou escolhendo um item.

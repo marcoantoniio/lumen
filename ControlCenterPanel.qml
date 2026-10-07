@@ -11,10 +11,11 @@ import Quickshell.Io
 import Quickshell.Networking
 import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
+import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 
-PopupWindow {
+PanelWindow {
     id: panel
 
     property var panelWindow: null
@@ -156,17 +157,26 @@ PopupWindow {
     // Largura exata de cada coluna do Control Center (margens 16*2 + spacing 18)
     readonly property real controlColumnWidth: (panelWidth - 32 - 18) / 2
 
-    anchor.window: panelWindow
-    anchor.rect.x: anchorItem
-                   ? anchorItem.x + (anchorItem.width - panelWidth) / 2
-                   : (panelWindow ? panelWindow.width - panelWidth - Theme.barMargin : 0)
-    anchor.rect.y: anchorItem
-                   ? anchorItem.y + anchorItem.height - 1
-                   : (panelWindow ? panelWindow.height + Theme.barMargin : 0)
-    implicitWidth: panelWidth
+    // Layer surface em vez de popup: popups não recebem teclado no KWin; a
+    // layer surface com foco sob demanda recebe (necessário para as notas).
+    screen: panelWindow ? panelWindow.screen : null
+    anchors {
+        top: true
+        left: true
+        right: true
+    }
+    margins {
+        // encosta na ilha (fundo da pílula - 1)
+        top: Island.square ? 38 : 45
+    }
     // Altura fixa: redimensionar a janela ao trocar de aba glicha no Wayland
     implicitHeight: 464
     color: "transparent"
+    exclusionMode: ExclusionMode.Ignore
+    aboveWindows: true
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+    // Só o cartão recebe cliques (o resto da faixa é click-through)
+    mask: Region { item: frame }
     visible: ControlCenter.open
 
     onVisibleChanged: {
@@ -275,22 +285,18 @@ PopupWindow {
         onTriggered: sysProc.running = true
     }
 
-    // ---- notas (persistidas no stateDir do shell) ----
-    FileView {
-        id: notesFile
-
-        path: Quickshell.stateDir + "/notes.txt"
-
-        onLoadedChanged: {
-            if (loaded)
-                notesEdit.text = text();
-        }
+    // ---- notas: carrega a nota atual nos campos (título + corpo) ----
+    function loadCurrentNote() {
+        const n = Notes.notes[Notes.current];
+        notesTitle.text = n ? (n.title || "") : "";
+        notesEdit.text = n ? (n.body || "") : "";
     }
 
-    Timer {
-        id: notesSave
-        interval: 700
-        onTriggered: notesFile.setText(notesEdit.text)
+    Connections {
+        target: Notes
+
+        function onCurrentChanged() { panel.loadCurrentNote(); }
+        function onLoadSeqChanged() { panel.loadCurrentNote(); }
     }
 
     // ---- histórico do clipboard (Klipper) + refresh por aba ----
@@ -314,13 +320,19 @@ PopupWindow {
         onTriggered: Clipboard.refresh()
     }
 
-    Component.onCompleted: { sysProc.running = true; Clipboard.refresh(); }
+    Component.onCompleted: {
+        sysProc.running = true;
+        Clipboard.refresh();
+        panel.loadCurrentNote();
+    }
 
     Rectangle {
         id: frame
 
-        anchors.fill: parent
-        implicitHeight: column.implicitHeight + 32
+        width: panel.panelWidth
+        height: parent.height
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
         radius: Theme.radius
         topLeftRadius: 0
         topRightRadius: 0
@@ -1040,8 +1052,14 @@ PopupWindow {
                                 id: itemArea
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: Clipboard.copyItem(modelData)
+                                onClicked: (mouse) => {
+                                    if (mouse.button === Qt.RightButton)
+                                        Clipboard.removeItem(modelData);
+                                    else
+                                        Clipboard.copyItem(modelData);
+                                }
                             }
                         }
                     }
@@ -1051,18 +1069,256 @@ PopupWindow {
                         visible: Clipboard.items.length === 0
                         text: Clipboard.available
                               ? "Nenhum item no histórico"
-                              : "Histórico indisponível (Klipper não encontrado)"
+                              : "Histórico indisponível — instale o wl-clipboard"
                         color: Theme.foregroundDim
                         font.family: Theme.fontFamily
                         font.pixelSize: 11
                     }
                 }
 
-                Text {
-                    text: "Notas"
-                    color: Theme.foregroundDim
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 11
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    Text {
+                        text: "Notas"
+                        color: Theme.foregroundDim
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 11
+                    }
+
+                    // seta esquerda (só quando tem nota escondida à esquerda)
+                    Text {
+                        visible: notesChips.contentX > 1
+                        text: "‹"
+                        color: chipLeft.containsMouse ? Theme.foreground : Theme.foregroundDim
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 14
+
+                        MouseArea {
+                            id: chipLeft
+                            anchors.fill: parent
+                            anchors.margins: -4
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: notesChips.scrollBy(-1)
+                        }
+                    }
+
+                    // abas das notas (roláveis)
+                    Flickable {
+                        id: notesChips
+
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 22
+                        contentWidth: chipsRow.implicitWidth
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        // rolagem até o fim: persegue o fim enquanto o chip novo é
+                        // medido (a largura do conteúdo só cresce depois do clique)
+                        property bool goToEnd: false
+
+                        function scrollBy(dir) {
+                            goToEnd = false;
+                            contentX = Math.max(0, Math.min(contentWidth - width, contentX + dir * 120));
+                        }
+
+                        function scrollToEnd() {
+                            goToEnd = true;
+                            scrollToEndNow();
+                            endSettle.restart();
+                        }
+
+                        function scrollToEndNow() {
+                            contentX = Math.max(0, contentWidth - width);
+                        }
+
+                        onContentWidthChanged: {
+                            if (goToEnd) {
+                                scrollToEndNow();
+                                endSettle.restart();
+                            }
+                        }
+                        onWidthChanged: if (goToEnd) scrollToEndNow()
+                        onMovementStarted: goToEnd = false
+
+                        Timer {
+                            id: endSettle
+
+                            interval: 400
+                            onTriggered: notesChips.goToEnd = false
+                        }
+
+                        Behavior on contentX {
+                            enabled: !notesChips.moving && !notesChips.flicking
+                            NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+                        }
+
+                        Row {
+                            id: chipsRow
+
+                            spacing: 4
+
+                            Repeater {
+                                model: Notes.notes
+
+                                delegate: Rectangle {
+                                    required property var modelData
+                                    required property int index
+
+                                    readonly property bool current: index === Notes.current
+
+                                    width: Math.min(chipText.implicitWidth + 16, 120)
+                                    height: 22
+                                    radius: 11
+                                    color: current
+                                           ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22)
+                                           : (chipArea.containsMouse ? Theme.surfaceHover : Theme.card)
+                                    border.width: 1
+                                    border.color: current ? Theme.accent : "transparent"
+
+                                    Text {
+                                        id: chipText
+
+                                        anchors.centerIn: parent
+                                        width: parent.width - 16
+                                        text: modelData.title !== "" ? modelData.title : "Sem título"
+                                        color: current ? Theme.accent : Theme.foreground
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 10
+                                        elide: Text.ElideRight
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+
+                                    MouseArea {
+                                        id: chipArea
+
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: Notes.current = index
+                                    }
+
+                                    // ✕ (aparece com o mouse em cima) — apaga a nota
+                                    Rectangle {
+                                        id: chipDel
+
+                                        width: 12
+                                        height: 12
+                                        radius: 6
+                                        color: delChipArea.containsMouse ? Theme.urgent : Theme.surfaceHover
+                                        border.width: 1
+                                        border.color: delChipArea.containsMouse ? Theme.urgent : Theme.border
+                                        anchors {
+                                            right: parent.right
+                                            rightMargin: 4
+                                            verticalCenter: parent.verticalCenter
+                                        }
+                                        opacity: (chipArea.containsMouse || delChipArea.containsMouse) ? 1 : 0
+                                        visible: opacity > 0.01
+                                        scale: delChipArea.containsMouse ? 1.15 : 1
+
+                                        Behavior on opacity {
+                                            NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+                                        }
+                                        Behavior on scale {
+                                            NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
+                                        }
+                                        Behavior on color {
+                                            ColorAnimation { duration: 120 }
+                                        }
+                                        Behavior on border.color {
+                                            ColorAnimation { duration: 120 }
+                                        }
+
+                                        // ✕ desenhado (centralizado certinho)
+                                        Item {
+                                            anchors.centerIn: parent
+                                            width: 6
+                                            height: 6
+
+                                            Rectangle {
+                                                anchors.centerIn: parent
+                                                width: 6
+                                                height: 1.4
+                                                radius: 0.7
+                                                rotation: 45
+                                                color: delChipArea.containsMouse ? Theme.background : Theme.foregroundDim
+                                            }
+
+                                            Rectangle {
+                                                anchors.centerIn: parent
+                                                width: 6
+                                                height: 1.4
+                                                radius: 0.7
+                                                rotation: -45
+                                                color: delChipArea.containsMouse ? Theme.background : Theme.foregroundDim
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            id: delChipArea
+
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: Notes.removeNote(index)
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+                    // seta direita (só quando tem nota escondida à direita)
+                    Text {
+                        visible: notesChips.contentX < notesChips.contentWidth - notesChips.width - 6
+                        text: "›"
+                        color: chipRight.containsMouse ? Theme.foreground : Theme.foregroundDim
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 14
+
+                        MouseArea {
+                            id: chipRight
+                            anchors.fill: parent
+                            anchors.margins: -4
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: notesChips.scrollBy(1)
+                        }
+                    }
+
+                    // criar nova nota (sempre visível)
+                    Rectangle {
+                        width: 22
+                        height: 22
+                        radius: 11
+                        color: plusArea.containsMouse ? Theme.surfaceHover : Theme.card
+                        border.width: 1
+                        border.color: plusArea.containsMouse ? Theme.border : "transparent"
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "+"
+                            color: Theme.foreground
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 13
+                        }
+
+                        MouseArea {
+                            id: plusArea
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                Notes.addNote();
+                                notesChips.scrollToEnd();
+                            }
+                        }
+                    }
                 }
 
                 Rectangle {
@@ -1072,20 +1328,58 @@ PopupWindow {
                     radius: 10
                     color: Theme.card
 
-                    TextEdit {
-                        id: notesEdit
+                    ColumnLayout {
                         anchors {
                             fill: parent
                             margins: 10
                         }
-                        color: Theme.foreground
-                        selectionColor: Theme.accent
-                        selectedTextColor: Theme.background
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 12
-                        wrapMode: TextEdit.Wrap
-                        selectByMouse: true
-                        onTextChanged: notesSave.restart()
+                        spacing: 2
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 6
+
+                            TextInput {
+                                id: notesTitle
+
+                                Layout.fillWidth: true
+                                color: Theme.foreground
+                                selectionColor: Theme.accent
+                                selectedTextColor: Theme.background
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 14
+                                font.bold: true
+                                selectByMouse: true
+                                clip: true
+                                onTextChanged: Notes.update(notesTitle.text, notesEdit.text)
+
+                                Text {
+                                    anchors.fill: parent
+                                    visible: notesTitle.text === ""
+                                    text: "Título"
+                                    color: Theme.foregroundDim
+                                    font: notesTitle.font
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                            }
+
+                        }
+
+                        TextEdit {
+                            id: notesEdit
+
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            color: Theme.foreground
+                            selectionColor: Theme.accent
+                            selectedTextColor: Theme.background
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 12
+                            wrapMode: TextEdit.Wrap
+                            selectByMouse: true
+                            clip: true
+                            onTextChanged: Notes.update(notesTitle.text, notesEdit.text)
+                        }
                     }
                 }
 

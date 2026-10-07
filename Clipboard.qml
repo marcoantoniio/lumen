@@ -1,55 +1,195 @@
 pragma Singleton
 
-// Histórico do clipboard via Klipper (KDE).
-// - getClipboardHistoryMenu retorna a lista (o primeiro item é o atual).
-// - copyItem() devolve um item para o clipboard.
-// - Em compositores sem Klipper, `available` fica false e a UI avisa.
+// Histórico do clipboard via wl-clipboard:
+// - `wl-paste --watch` alimenta o histórico (base64 por linha no state dir,
+//   com dedup e limite de 60 itens);
+// - a UI lista os itens e copia de volta com `wl-copy`.
+// Requer o pacote `wl-clipboard`; sem ele, `available` fica false.
 //
 // IPC: qs -c lumen ipc call clipboard refresh|clear|copy <texto>
 
 import Quickshell
 import Quickshell.Io
+import QtQuick
 
 Singleton {
     id: root
 
-    property var items: []
+    property var items: []       // textos, mais novo primeiro
     property bool available: false
 
+    // Feedback rápido na ilha (ícone + prévia) quando algo é copiado
+    property string lastItem: ""
+    property int lastSeq: 0
+    property bool feedbackVisible: false
+
+    readonly property string historyFile: Quickshell.stateDir + "/clipboard.txt"
+
     function refresh() {
-        if (!query.running)
-            query.running = true;
+        if (!readProc.running)
+            readProc.running = true;
     }
 
     function copyItem(text) {
-        setProc.command = ["qdbus6", "org.kde.klipper", "/klipper", "org.kde.klipper.klipper.setClipboardContents", text];
+        setProc.command = ["wl-copy", text];
         setProc.running = true;
+    }
+
+    // remove um item do histórico (botão direito na aba do CC)
+    function removeItem(text) {
+        removeProc.command = ["sh", "-c",
+            "b=$(printf '%s' \"$1\" | base64 -w0); f='" + historyFile + "'; " +
+            "grep -vxF \"$b\" \"$f\" > \"$f.rm\" && cat \"$f.rm\" > \"$f\" && rm -f \"$f.rm\"",
+            "sh", text];
+        removeProc.running = true;
+        items = items.filter(i => i !== text);
     }
 
     function clearHistory() {
         items = [];
-        if (!clearProc.running)
-            clearProc.running = true;
+        Quickshell.execDetached(["sh", "-c", ": > '" + historyFile + "'"]);
     }
 
+    function startWatcher() {
+        if (available && !watchProc.running)
+            watchProc.running = true;
+    }
+
+    Component.onCompleted: {
+        checkProc.running = true;
+        followProc.running = true;
+    }
+
+    // vigia o histórico (tail -f): cada linha nova vira feedback na ilha
     Process {
-        id: query
+        id: followProc
 
-        command: ["qdbus6", "org.kde.klipper", "/klipper", "org.kde.klipper.klipper.getClipboardHistoryMenu"]
+        command: ["sh", "-c",
+            "touch '" + root.historyFile + "'; exec tail -n0 -f '" + root.historyFile + "'"]
 
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const list = text.split("\n").map(l => l.replace(/\r$/, "")).filter(l => l.length > 0);
-                // Só atualiza se mudou (evita rebuild da lista a cada refresh)
-                if (JSON.stringify(list) !== JSON.stringify(root.items))
-                    root.items = list;
-                root.available = true;
+        stdout: SplitParser {
+            onRead: (line) => {
+                if (line.length > 0)
+                    root.showFeedback(line);
             }
         }
 
+        onExited: followRetry.start()
+    }
+
+    Timer {
+        id: followRetry
+
+        interval: 2000
+        onTriggered: if (!followProc.running) followProc.running = true
+    }
+
+    function showFeedback(b64) {
+        if (decodeProc.running)
+            decodeProc.running = false;
+        decodeProc.command = ["sh", "-c", "printf '%s' \"$1\" | base64 -d", "sh", b64];
+        decodeProc.running = true;
+    }
+
+    Process {
+        id: decodeProc
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const txt = text.replace(/\n+$/, "");
+                if (txt === "")
+                    return;
+                root.lastItem = txt;
+                root.lastSeq = root.lastSeq + 1;
+                root.feedbackVisible = true;
+                feedbackTimer.restart();
+            }
+        }
+    }
+
+    Timer {
+        id: feedbackTimer
+
+        interval: 2200
+        onTriggered: root.feedbackVisible = false
+    }
+
+    // disponibilidade do wl-clipboard (re-checa enquanto não tiver)
+    Process {
+        id: checkProc
+
+        command: ["sh", "-c",
+            "command -v wl-paste >/dev/null && command -v wl-copy >/dev/null && echo yes || echo no"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.available = text.trim() === "yes";
+                if (root.available)
+                    root.startWatcher();
+                else
+                    checkAgain.start();
+            }
+        }
+    }
+
+    Timer {
+        id: checkAgain
+
+        interval: 8000
+        onTriggered: if (!root.available) checkProc.running = true
+    }
+
+    // watcher: cada mudança no clipboard vira uma linha base64 no histórico.
+    // Guarda o último conteúdo visto (.last) pra re-ofertas da mesma seleção
+    // não re-adicionarem o que foi removido; temp próprio (.tmp).
+    Process {
+        id: watchProc
+
+        command: ["wl-paste", "--watch", "sh", "-c",
+            "b=$(base64 -w0); f='" + root.historyFile + "'; l='" + root.historyFile + ".last'; " +
+            "[ -n \"$b\" ] && [ ${#b} -lt 200000 ] || exit 0; " +
+            "[ \"$b\" = \"$(cat \"$l\" 2>/dev/null)\" ] && exit 0; " +
+            "printf '%s' \"$b\" > \"$l\"; " +
+            "{ grep -vxF \"$b\" \"$f\" 2>/dev/null; printf '%s\\n' \"$b\"; } > \"$f.tmp\" && " +
+            "tail -n 60 \"$f.tmp\" > \"$f\" && rm -f \"$f.tmp\""]
+
         onExited: (code) => {
             if (code !== 0)
-                root.available = false;
+                watchRetry.start();
+        }
+    }
+
+    Timer {
+        id: watchRetry
+
+        interval: 3000
+        onTriggered: root.startWatcher()
+    }
+
+    // leitura: decodifica o histórico (mais novo primeiro)
+    Process {
+        id: readProc
+
+        command: ["sh", "-c",
+            "command -v wl-paste >/dev/null || exit 1; " +
+            "python3 -c \"import base64,json; " +
+            "ls=[base64.b64decode(l).decode('utf-8','replace') " +
+            "for l in open('" + root.historyFile + "',encoding='utf-8').read().splitlines() if l]; " +
+            "print(json.dumps(ls[::-1][:60]))\" 2>/dev/null"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let list = null;
+                try {
+                    list = JSON.parse(text);
+                } catch (e) {
+                    list = null;
+                }
+                if (Array.isArray(list)) {
+                    root.items = list;
+                    root.available = true;
+                }
+            }
         }
     }
 
@@ -58,11 +198,7 @@ Singleton {
     }
 
     Process {
-        id: clearProc
-
-        command: ["qdbus6", "org.kde.klipper", "/klipper", "org.kde.klipper.klipper.clearClipboardHistory"]
-
-        onExited: root.refresh()
+        id: removeProc
     }
 
     IpcHandler {

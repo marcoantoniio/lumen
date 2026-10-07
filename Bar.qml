@@ -193,15 +193,17 @@ PanelWindow {
             }
         }
 
-        // Item central: volume (OSD) > gravação > timer > música > relógio
+        // Item central: volume (OSD) > gravação > timer > clipboard > música > relógio
         readonly property string centerMode: Audio.osdVisible ? "volume"
             : Recorder.recording ? "rec"
             : TimerService.messageVisible ? "timer"
+            : Clipboard.feedbackVisible ? "clipboard"
             : ((Music.playing || (Music.panelOpen && Music.active)) ? "music" : "clock")
 
         readonly property real centerWidth: centerMode === "volume" ? volumeOsd.implicitWidth
             : centerMode === "rec" ? recIndicator.implicitWidth
             : centerMode === "timer" ? timerNotice.implicitWidth
+            : centerMode === "clipboard" ? clipNotice.implicitWidth
             : centerMode === "music" ? nowPlaying.implicitWidth
             : clockItem.implicitWidth
 
@@ -305,6 +307,12 @@ PanelWindow {
             id: timerNotice
             anchors.centerIn: parent
             visible: pill.centerMode === "timer"
+        }
+
+        ClipboardNotice {
+            id: clipNotice
+            anchors.centerIn: parent
+            visible: pill.centerMode === "clipboard"
         }
 
         // ---- direita: botões de categoria ----
