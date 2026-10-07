@@ -15,8 +15,13 @@ import QtQuick
 Singleton {
     id: root
 
-    property var items: []       // textos, mais novo primeiro
+    property var items: []       // { b64, text }, mais novo primeiro
     property bool available: false
+
+    // Fila interna de remoções: o Process de remoção é único, então uma
+    // remoção nova espera a anterior terminar (senão era descartada e o item
+    // reaparecia no refresh).
+    property var removals: []
 
     // Feedback rápido na ilha (ícone + prévia) quando algo é copiado
     property string lastItem: ""
@@ -35,14 +40,28 @@ Singleton {
         setProc.running = true;
     }
 
-    // remove um item do histórico (botão direito na aba do CC)
-    function removeItem(text) {
+    // remove um item do histórico (botão direito na aba do CC). Recebe a
+    // linha base64 original: o texto exibido de um item binário (PNG etc.)
+    // passa por decode com perdas e nunca casaria com o que está gravado.
+    function removeItem(b64) {
+        items = items.filter(i => i.b64 !== b64);
+        removals.push(b64);
+        runNextRemoval();
+    }
+
+    function runNextRemoval() {
+        if (removeProc.running || removals.length === 0)
+            return;
+        // $1 é a própria linha do arquivo; o grep -v sai 1 quando não sobra
+        // nenhuma linha (removendo o último item), então não pode abortar o
+        // restante — senão o arquivo não é reescrito e o item volta no refresh
         removeProc.command = ["sh", "-c",
-            "b=$(printf '%s' \"$1\" | base64 -w0); f='" + historyFile + "'; " +
-            "grep -vxF \"$b\" \"$f\" > \"$f.rm\" && cat \"$f.rm\" > \"$f\" && rm -f \"$f.rm\"",
-            "sh", text];
+            "f='" + historyFile + "'; " +
+            "grep -qxF \"$1\" \"$f\" 2>/dev/null || exit 0; " +
+            "grep -vxF \"$1\" \"$f\" > \"$f.rm\"; " +
+            "cat \"$f.rm\" > \"$f\"; rm -f \"$f.rm\"",
+            "sh", removals.shift()];
         removeProc.running = true;
-        items = items.filter(i => i !== text);
     }
 
     function clearHistory() {
@@ -173,7 +192,7 @@ Singleton {
         command: ["sh", "-c",
             "command -v wl-paste >/dev/null || exit 1; " +
             "python3 -c \"import base64,json; " +
-            "ls=[base64.b64decode(l).decode('utf-8','replace') " +
+            "ls=[{'b64':l,'text':base64.b64decode(l).decode('utf-8','replace')} " +
             "for l in open('" + root.historyFile + "',encoding='utf-8').read().splitlines() if l]; " +
             "print(json.dumps(ls[::-1][:60]))\" 2>/dev/null"]
 
@@ -199,6 +218,8 @@ Singleton {
 
     Process {
         id: removeProc
+
+        onExited: root.runNextRemoval()
     }
 
     IpcHandler {

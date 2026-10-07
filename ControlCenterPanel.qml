@@ -1164,7 +1164,7 @@ PanelWindow {
                                     leftMargin: 8
                                     rightMargin: 8
                                 }
-                                text: modelData
+                                text: modelData.text
                                 color: Theme.foreground
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 11
@@ -1180,9 +1180,9 @@ PanelWindow {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: (mouse) => {
                                     if (mouse.button === Qt.RightButton)
-                                        Clipboard.removeItem(modelData);
+                                        Clipboard.removeItem(modelData.b64);
                                     else
-                                        Clipboard.copyItem(modelData);
+                                        Clipboard.copyItem(modelData.text);
                                 }
                             }
                         }
