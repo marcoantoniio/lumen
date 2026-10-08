@@ -26,10 +26,36 @@ Row {
         }
     }
 
-    // Barrinhas (equalizador) — congelam quando pausado
+    // Barrinhas (equalizador) — congelam quando pausado.
+    // Otimização: em vez de 4 animações recalculando easing a cada frame (o
+    // loop de render ficava solto em ~200 fps), um único Timer na taxa da
+    // tela percorre uma tabela com o ciclo já calculado (4 -> 14 -> 4). Sem
+    // animação ativa, o loop de render só roda quando o Timer muda as alturas.
     Row {
+        id: bars
+
         anchors.verticalCenter: parent.verticalCenter
         spacing: 2
+
+        // Um ciclo completo (InOutSine) em 256 posições: aproxima o from=0
+        // e o "salto" não têm como acontecer — os valores são sempre 4..14.
+        readonly property var table: {
+            const t = [];
+            for (let i = 0; i < 256; ++i)
+                t.push(9 - 5 * Math.cos(2 * Math.PI * i / 256));
+            return t;
+        }
+
+        property int frame: 0
+        property real t0: Date.now()
+
+        Timer {
+            interval: 7          // ~144 Hz (taxa da tela principal, DP-1)
+            repeat: true
+            running: Music.playing
+            onRunningChanged: if (running) bars.t0 = Date.now()
+            onTriggered: bars.frame++
+        }
 
         Repeater {
             model: 4
@@ -41,16 +67,14 @@ Row {
                 width: 3
                 radius: 1.5
                 color: Theme.accent
-                height: 4
 
-                SequentialAnimation on height {
-                    running: Music.playing
-                    loops: Animation.Infinite
-
-                    // from explícito: sem ele o driver de animação assume
-                    // from=0 ao (re)iniciar e a barra cai a 0 (o "salto")
-                    NumberAnimation { from: 4; to: 14; duration: 260 + index * 60; easing.type: Easing.InOutSine }
-                    NumberAnimation { from: 14; to: 4; duration: 260 + index * 60; easing.type: Easing.InOutSine }
+                // altura lida da tabela na fase da barra (ciclo = 2 meias-ondas)
+                height: {
+                    bars.frame;   // dependência: reavalia a cada tick do Timer
+                    const cyc = 2 * (260 + index * 60);
+                    const el = Date.now() - bars.t0;
+                    const ph = (((el % cyc) + cyc) % cyc) / cyc;
+                    return bars.table[Math.floor(ph * 256) % 256];
                 }
             }
         }
