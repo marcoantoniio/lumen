@@ -25,6 +25,10 @@ PanelWindow {
     margins {
         // encosta na ilha (fundo da pílula - 1)
         top: Island.square ? 38 : 45
+        // janela só com a largura útil, centrada (a moldura máx é
+        // Theme.panelMorphWidth): superfície menor = menos VRAM/RAM
+        left: panelWindow ? Math.max(0, (panelWindow.screen.width - (Theme.panelMorphWidth + 20)) / 2) : 0
+        right: panelWindow ? Math.max(0, (panelWindow.screen.width - (Theme.panelMorphWidth + 20)) / 2) : 0
     }
     implicitHeight: Theme.panelMorphHeight
     color: "transparent"
