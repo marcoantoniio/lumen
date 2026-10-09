@@ -133,6 +133,13 @@ PartOf=graphical-session.target
 
 [Service]
 Type=simple
+# NVIDIA + Wayland: Qt may fall back to the basic render loop (~60 fps);
+# Vulkan uses the threaded render loop. Uncomment if animations feel capped.
+# Environment=QSG_RHI_BACKEND=vulkan
+# On setups with monitors of different refresh rates, the default animation
+# driver steps at the primary screen's rate; this keeps animations in real
+# time on the faster monitor. Uncomment if animations look ~60 fps.
+# Environment=QSG_USE_SIMPLE_ANIMATION_DRIVER=1
 ExecStart=/usr/bin/qs -c skye -n
 Restart=on-failure
 RestartSec=2s
