@@ -22,7 +22,7 @@ Rectangle {
         spacing: 6
 
         Text {
-            text: "Sistema"
+            text: I18n.tr("system")
             color: Theme.foregroundDim
             font.family: Theme.fontFamily
             font.pixelSize: 11

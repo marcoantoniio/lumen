@@ -13,6 +13,7 @@ ShellRoot {
     readonly property var _notifications: Notifications.trackedNotifications
     readonly property var _workspaces: Workspaces.displayItems
     readonly property var _umbriel: Umbriel.workspaces
+    readonly property var _i18n: I18n.language
 
     // A ilha dinâmica só no monitor principal (Theme.barScreenName); se o nome
     // não existir no setup, cai no primeiro monitor.

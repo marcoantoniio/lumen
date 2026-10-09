@@ -16,7 +16,8 @@ Singleton {
     readonly property string text: {
         root.tick;
         const h = new Date().getHours();
-        const greet = h < 12 ? "Bom dia" : (h < 18 ? "Boa tarde" : "Boa noite");
+        const greet = h < 12 ? I18n.tr("goodMorning")
+            : (h < 18 ? I18n.tr("goodAfternoon") : I18n.tr("goodEvening"));
         return greet + ", " + root.userName;
     }
 

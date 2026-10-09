@@ -281,7 +281,7 @@ PanelWindow {
 
                 Text {
                     Layout.fillWidth: true
-                    text: "Câmera"
+                    text: I18n.tr("camera")
                     color: Theme.foreground
                     font.family: Theme.fontFamily
                     font.pixelSize: 12
@@ -315,7 +315,7 @@ PanelWindow {
                 Text {
                     anchors.centerIn: parent
                     visible: panel.cameras.length === 0
-                    text: "nenhuma câmera encontrada"
+                    text: I18n.tr("noCamera")
                     color: Theme.foregroundDim
                     font.family: Theme.fontFamily
                     font.pixelSize: 11

@@ -65,7 +65,7 @@ PanelWindow {
         if (mount === "/")
             return "root";
         if (mount === "/mnt/ssd")
-            return "jogos";
+            return I18n.tr("diskGames");
         if (mount === "/mnt/hd")
             return "HD";
         return mount;
@@ -511,19 +511,19 @@ PanelWindow {
                 spacing: 8
 
                 PanelTab {
-                    label: "Control Center"
+                    label: I18n.tr("tabControlCenter")
                     selected: ControlCenter.tab === 0
                     onActivated: ControlCenter.tab = 0
                 }
 
                 PanelTab {
-                    label: "Dashboard"
+                    label: I18n.tr("tabDashboard")
                     selected: ControlCenter.tab === 1
                     onActivated: ControlCenter.tab = 1
                 }
 
                 PanelTab {
-                    label: "Clipboard & Notes"
+                    label: I18n.tr("tabClipboardNotes")
                     selected: ControlCenter.tab === 2
                     onActivated: ControlCenter.tab = 2
                 }
@@ -582,7 +582,7 @@ PanelWindow {
                     spacing: 8
 
                     Text {
-                        text: "Quick Settings"
+                        text: I18n.tr("quickSettings")
                         color: Theme.foregroundDim
                         font.family: Theme.fontFamily
                         font.pixelSize: 11
@@ -597,7 +597,7 @@ PanelWindow {
                         QuickToggle {
                             Layout.fillWidth: true
                             glyph: "\u{F0201}" // nf-md-earth (rede)
-                            label: "Rede"
+                            label: I18n.tr("network")
                             active: Networking.connectivity === NetworkConnectivity.Full
                             onActivated: {
                                 if (Networking.wifiHardwareEnabled)
@@ -608,7 +608,7 @@ PanelWindow {
                         QuickToggle {
                             Layout.fillWidth: true
                             glyph: "\u{F009B}" // nf-md-bell-off
-                            label: "Não Perturbe"
+                            label: I18n.tr("dnd")
                             active: Notifications.dnd
                             onActivated: Notifications.dnd = !Notifications.dnd
                         }
@@ -616,7 +616,7 @@ PanelWindow {
                         QuickToggle {
                             Layout.fillWidth: true
                             glyph: "\u{F0599}" // nf-md-brightness-6 (night light)
-                            label: "Night Light"
+                            label: I18n.tr("nightLight")
                             available: ControlCenter.nightLightAvailable
                             active: ControlCenter.nightLightEnabled
                             onActivated: ControlCenter.toggleNightLight()
@@ -625,7 +625,7 @@ PanelWindow {
                         QuickToggle {
                             Layout.fillWidth: true
                             glyph: "\u{F0176}" // nf-md-coffee
-                            label: "Caffeine"
+                            label: I18n.tr("caffeine")
                             active: ControlCenter.caffeineEnabled
                             onActivated: ControlCenter.caffeineEnabled = !ControlCenter.caffeineEnabled
                         }
@@ -633,7 +633,7 @@ PanelWindow {
                         QuickToggle {
                             Layout.fillWidth: true
                             glyph: "\u{F00AF}" // nf-md-bluetooth
-                            label: "Bluetooth"
+                            label: I18n.tr("bluetooth")
                             available: Bluetooth.defaultAdapter !== null
                             active: Bluetooth.defaultAdapter !== null && Bluetooth.defaultAdapter.enabled
                             onActivated: {
@@ -645,7 +645,7 @@ PanelWindow {
                         QuickToggle {
                             Layout.fillWidth: true
                             glyph: "\u{F0100}" // nf-md-video
-                            label: "Gravador"
+                            label: I18n.tr("recorder")
                             active: Recorder.recording
                             onActivated: Recorder.toggle()
                         }
@@ -653,7 +653,7 @@ PanelWindow {
                         QuickToggle {
                             Layout.fillWidth: true
                             glyph: "\u{F05A0}" // nf-md-webcam
-                            label: "Câmera"
+                            label: I18n.tr("camera")
                             active: Webcam.open
                             onActivated: Webcam.toggle()
                         }
@@ -661,14 +661,14 @@ PanelWindow {
                         QuickToggle {
                             Layout.fillWidth: true
                             glyph: "\u{F0763}" // nf-md-square-outline
-                            label: "Ilha quadrada"
+                            label: I18n.tr("squareIsland")
                             active: Island.square
                             onActivated: Island.square = !Island.square
                         }
                     }
 
                     Text {
-                        text: "Sessão"
+                        text: I18n.tr("session")
                         color: Theme.foregroundDim
                         font.family: Theme.fontFamily
                         font.pixelSize: 11
@@ -681,14 +681,14 @@ PanelWindow {
                         QuickToggle {
                             Layout.fillWidth: true
                             glyph: "\u{F033E}" // nf-md-lock
-                            label: "Bloquear"
+                            label: I18n.tr("lock")
                             onActivated: Quickshell.execDetached(["loginctl", "lock-session"])
                         }
 
                         QuickToggle {
                             Layout.fillWidth: true
                             glyph: "\u{F0343}" // nf-md-logout
-                            label: "Sair"
+                            label: I18n.tr("logout")
                             onActivated: {
                                 const sid = Quickshell.env("XDG_SESSION_ID");
                                 if (sid)
@@ -699,14 +699,14 @@ PanelWindow {
                         QuickToggle {
                             Layout.fillWidth: true
                             glyph: "\u{F0709}" // nf-md-restart
-                            label: "Reiniciar"
+                            label: I18n.tr("restart")
                             onActivated: Quickshell.execDetached(["systemctl", "reboot"])
                         }
 
                         QuickToggle {
                             Layout.fillWidth: true
                             glyph: "\u{F0425}" // nf-md-power
-                            label: "Desligar"
+                            label: I18n.tr("shutdown")
                             onActivated: Quickshell.execDetached(["systemctl", "poweroff"])
                         }
                     }
@@ -797,7 +797,7 @@ PanelWindow {
                             enabled: !ControlCenter.mixerOpen
 
                             Text {
-                                text: "Levels"
+                                text: I18n.tr("levels")
                                 color: Theme.foregroundDim
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 11
@@ -808,8 +808,8 @@ PanelWindow {
 
                                 Layout.fillWidth: true
                                 glyph: panel.sink && panel.sink.audio && panel.sink.audio.muted ? "\u{F0581}" : "\u{F057E}" // volume-off / volume-high
-                                title: "Saída · " + Math.round((panel.sink && panel.sink.audio ? panel.sink.audio.volume : 0) * 100) + "%"
-                                subtitle: panel.sink ? (panel.sink.description || panel.sink.name) : "sem saída de áudio"
+                                title: I18n.tr("output") + " · " + Math.round((panel.sink && panel.sink.audio ? panel.sink.audio.volume : 0) * 100) + "%"
+                                subtitle: panel.sink ? (panel.sink.description || panel.sink.name) : I18n.tr("noAudioOutput")
                                 value: panel.sink && panel.sink.audio ? panel.sink.audio.volume : 0
                                 muted: panel.sink && panel.sink.audio ? panel.sink.audio.muted : false
                                 onMoved: (v) => {
@@ -836,8 +836,8 @@ PanelWindow {
 
                                 Layout.fillWidth: true
                                 glyph: panel.source && panel.source.audio && panel.source.audio.muted ? "\u{F036D}" : "\u{F036C}" // mic-off / mic
-                                title: "Microfone · " + Math.round((panel.source && panel.source.audio ? panel.source.audio.volume : 0) * 100) + "%"
-                                subtitle: panel.source ? (panel.source.description || panel.source.name) : "sem microfone"
+                                title: I18n.tr("microphone") + " · " + Math.round((panel.source && panel.source.audio ? panel.source.audio.volume : 0) * 100) + "%"
+                                subtitle: panel.source ? (panel.source.description || panel.source.name) : I18n.tr("noMicrophone")
                                 value: panel.source && panel.source.audio ? panel.source.audio.volume : 0
                                 muted: panel.source && panel.source.audio ? panel.source.audio.muted : false
                                 onMoved: (v) => {
@@ -862,10 +862,10 @@ PanelWindow {
                             LevelRow {
                                 Layout.fillWidth: true
                                 glyph: "\u{F0599}" // nf-md-brightness-6
-                                title: "Brilho · " + Brightness.value + "%"
+                                title: I18n.tr("brightness") + " · " + Brightness.value + "%"
                                 subtitle: Brightness.available
                                           ? ("DDC/CI · " + Brightness.displayName)
-                                          : "sem DDC/CI neste sistema"
+                                          : I18n.tr("noDdc")
                                 value: Brightness.available ? Brightness.value / Brightness.maxValue : 0
                                 available: Brightness.available
                                 showArrow: false
@@ -948,7 +948,7 @@ PanelWindow {
                             // ---- mixer de aplicativos (substitui os Levels) ----
                             Text {
                                 Layout.fillWidth: true
-                                text: "Aplicativos tocando som"
+                                text: I18n.tr("appsPlaying")
                                 color: Theme.foregroundDim
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 11
@@ -996,7 +996,7 @@ PanelWindow {
                                         width: mixCol.width
                                         visible: Audio.playbackStreams.length === 0
                                         horizontalAlignment: Text.AlignHCenter
-                                        text: "nenhum aplicativo tocando som agora"
+                                        text: I18n.tr("noAppPlaying")
                                         color: Theme.foregroundDim
                                         font.family: Theme.fontFamily
                                         font.pixelSize: 11
@@ -1012,7 +1012,7 @@ PanelWindow {
                         Layout.fillWidth: true
                         Layout.topMargin: 4
                         glyph: "\u{F066A}" // nf-md-tune (mixer)
-                        label: "Mixer de aplicativos"
+                        label: I18n.tr("appMixer")
                         active: ControlCenter.mixerOpen
                         onActivated: ControlCenter.mixerOpen = !ControlCenter.mixerOpen
                     }
@@ -1053,7 +1053,8 @@ PanelWindow {
                         Text {
                             Layout.alignment: Qt.AlignVCenter
                             visible: Music.playing
-                            text: Qt.formatDateTime(dashClock.date, "ddd d MMM")
+                            // data no idioma escolhido (Qt.formatDateTime usa o locale C)
+                            text: dashClock.date.toLocaleString(I18n.dateLocale, "ddd d MMM").replace(/\./g, "")
                             color: Theme.foregroundDim
                             font.family: Theme.fontFamily
                             font.pixelSize: 12
@@ -1107,7 +1108,7 @@ PanelWindow {
                     Layout.fillWidth: true
 
                     Text {
-                        text: "Histórico"
+                        text: I18n.tr("history")
                         color: Theme.foregroundDim
                         font.family: Theme.fontFamily
                         font.pixelSize: 11
@@ -1117,7 +1118,7 @@ PanelWindow {
 
                     Text {
                         visible: Clipboard.items.length > 0
-                        text: "limpar"
+                        text: I18n.tr("clear")
                         color: clearClip.containsMouse ? Theme.foreground : Theme.foregroundDim
                         font.family: Theme.fontFamily
                         font.pixelSize: 11
@@ -1196,8 +1197,8 @@ PanelWindow {
                         anchors.centerIn: parent
                         visible: Clipboard.items.length === 0
                         text: Clipboard.available
-                              ? "Nenhum item no histórico"
-                              : "Histórico indisponível — instale o wl-clipboard"
+                              ? I18n.tr("noHistory")
+                              : I18n.tr("historyUnavailable")
                         color: Theme.foregroundDim
                         font.family: Theme.fontFamily
                         font.pixelSize: 11
@@ -1209,7 +1210,7 @@ PanelWindow {
                     spacing: 6
 
                     Text {
-                        text: "Notas"
+                        text: I18n.tr("notes")
                         color: Theme.foregroundDim
                         font.family: Theme.fontFamily
                         font.pixelSize: 11
@@ -1311,7 +1312,7 @@ PanelWindow {
 
                                         anchors.centerIn: parent
                                         width: parent.width - 16
-                                        text: modelData.title !== "" ? modelData.title : "Sem título"
+                                        text: modelData.title !== "" ? modelData.title : I18n.tr("untitled")
                                         color: current ? Theme.accent : Theme.foreground
                                         font.family: Theme.fontFamily
                                         font.pixelSize: 10
@@ -1484,7 +1485,7 @@ PanelWindow {
                                 Text {
                                     anchors.fill: parent
                                     visible: notesTitle.text === ""
-                                    text: "Título"
+                                    text: I18n.tr("title")
                                     color: Theme.foregroundDim
                                     font: notesTitle.font
                                     verticalAlignment: Text.AlignVCenter
@@ -1549,6 +1550,11 @@ PanelWindow {
                 FooterIcon {
                     glyph: "\u{F0493}" // engrenagem (configurações)
                     onActivated: Quickshell.execDetached(["systemsettings"])
+                }
+
+                FooterIcon {
+                    glyph: "\u{F05CA}" // nf-md-translate (idioma)
+                    onActivated: I18n.language = I18n.language === "en" ? "pt" : "en"
                 }
 
                 Item { Layout.fillWidth: true }

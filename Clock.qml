@@ -17,7 +17,8 @@ Item {
     Text {
         id: label
         anchors.centerIn: parent
-        text: Qt.formatDateTime(clock.date, "ddd d MMM · HH:mm")
+        // data no idioma escolhido (Qt.formatDateTime usa o locale C)
+        text: clock.date.toLocaleString(I18n.dateLocale, "ddd d MMM · HH:mm").replace(/\./g, "")
         color: Theme.foreground
         font.family: Theme.fontFamily
         font.pixelSize: 13

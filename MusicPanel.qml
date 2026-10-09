@@ -101,6 +101,32 @@ PanelWindow {
         }
     }
 
+    // As seções (Saída/Letras) mudam a altura do conteúdo: re-morfa a moldura
+    // depois do layout recalcular — senão a seção nova fica cortada até
+    // fechar/reabrir o painel.
+    Timer {
+        id: sectionMorphTimer
+
+        interval: 50
+        onTriggered: {
+            if (panel.shown && panel.wanted) {
+                morphH.stop();
+                morphH.from = panel.frameH;
+                morphH.to = panel.fullH;
+                morphH.start();
+            }
+        }
+    }
+
+    Connections {
+        target: Music
+
+        function onSectionChanged() {
+            if (panel.shown && panel.wanted)
+                sectionMorphTimer.restart();
+        }
+    }
+
     onWantedChanged: {
         if (wanted) {
             if (!shown) {
@@ -574,7 +600,7 @@ PanelWindow {
                 spacing: 4
 
                 Text {
-                    text: "Saída"
+                    text: I18n.tr("output")
                     color: Theme.foregroundDim
                     font.family: Theme.fontFamily
                     font.pixelSize: 10
@@ -674,7 +700,7 @@ PanelWindow {
                     spacing: 6
 
                     Text {
-                        text: "Letras"
+                        text: I18n.tr("lyrics")
                         color: Theme.foregroundDim
                         font.family: Theme.fontFamily
                         font.pixelSize: 10
@@ -684,7 +710,7 @@ PanelWindow {
 
                     Text {
                         visible: Music.lyricsLoading
-                        text: "carregando…"
+                        text: I18n.tr("loading")
                         color: Theme.foregroundDim
                         font.family: Theme.fontFamily
                         font.pixelSize: 10
@@ -692,7 +718,7 @@ PanelWindow {
 
                     Text {
                         visible: !Music.lyricsLoading && Music.lyricsStatus === "notfound"
-                        text: "não encontrada"
+                        text: I18n.tr("notFound")
                         color: Theme.foregroundDim
                         font.family: Theme.fontFamily
                         font.pixelSize: 10

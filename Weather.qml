@@ -15,7 +15,8 @@ Singleton {
     property int high: 0
     property int low: 0
     property int rainChance: 0
-    property string desc: ""
+    property int descCode: 113
+    readonly property string desc: descFor(descCode)
     property string icon: "\u{F0599}" // nf-md-weather-sunny
     property var hourly: []
     property string area: ""
@@ -50,20 +51,20 @@ Singleton {
 
     function descFor(code) {
         if (code === 113)
-            return "Céu limpo";
+            return I18n.tr("wSunny");
         if (code === 116)
-            return "Parcialmente nublado";
+            return I18n.tr("wPartlyCloudy");
         if (code === 119 || code === 122)
-            return "Nublado";
+            return I18n.tr("wCloudy");
         if (code === 143 || code === 248 || code === 260)
-            return "Nevoeiro";
+            return I18n.tr("wFog");
         if (code === 200 || code === 386 || code === 389)
-            return "Trovoada";
+            return I18n.tr("wThunder");
         if ([227, 230, 320, 323, 326, 329, 332, 335, 338, 368, 371, 374, 377].indexOf(code) >= 0)
-            return "Neve";
+            return I18n.tr("wSnow");
         if ([350, 362, 365, 374].indexOf(code) >= 0)
-            return "Chuva congelante";
-        return "Chuva";
+            return I18n.tr("wFreezingRain");
+        return I18n.tr("wRain");
     }
 
     Process {
@@ -80,7 +81,7 @@ Singleton {
                     const w1 = d.weather.length > 1 ? d.weather[1] : null;
 
                     root.tempC = Number(c.temp_C);
-                    root.desc = root.descFor(Number(c.weatherCode));
+                    root.descCode = Number(c.weatherCode);
                     root.icon = root.iconFor(Number(c.weatherCode));
                     root.high = Number(w0.maxtempC);
                     root.low = Number(w0.mintempC);

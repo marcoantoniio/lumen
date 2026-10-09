@@ -20,7 +20,9 @@ Rectangle {
         onTriggered: root.tick++
     }
 
-    readonly property var monthNames: ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
+    readonly property var monthNames: I18n.language === "en"
+        ? ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
+        : ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 
     function isoWeek(d) {
         const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -35,7 +37,9 @@ Rectangle {
         const now = new Date();
         const dow = now.getDay();
         const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
-        const initials = ["D", "S", "T", "Q", "Q", "S", "S"];
+        const initials = I18n.language === "en"
+            ? ["S", "M", "T", "W", "T", "F", "S"]
+            : ["D", "S", "T", "Q", "Q", "S", "S"];
         const days = [];
         for (let i = 0; i < 7; ++i) {
             const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
@@ -174,7 +178,7 @@ Rectangle {
 
         Text {
             Layout.fillWidth: true
-            text: "Semana " + root.week.week
+            text: I18n.tr("week") + root.week.week
             color: Theme.foregroundDim
             font.family: Theme.fontFamily
             font.pixelSize: 8

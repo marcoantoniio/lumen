@@ -183,11 +183,11 @@ PanelWindow {
     function relTime(ts) {
         const diff = Date.now() / 1000 - ts;
         if (diff < 60)
-            return "agora";
+            return I18n.tr("now");
         if (diff < 3600)
-            return "há " + Math.floor(diff / 60) + " min";
+            return I18n.tr("agoMin", [Math.floor(diff / 60)]);
         if (diff < 86400)
-            return "há " + Math.floor(diff / 3600) + " h";
+            return I18n.tr("agoHour", [Math.floor(diff / 3600)]);
         return Qt.formatDateTime(new Date(ts * 1000), "dd/MM HH:mm");
     }
 
@@ -236,7 +236,7 @@ PanelWindow {
                 leftMargin: 14
             }
             opacity: panel.frameH < 120 ? 0 : 1
-            text: "Recentes"
+            text: I18n.tr("recent")
             color: Theme.foregroundDim
             font.family: Theme.fontFamily
             font.pixelSize: 10
@@ -359,7 +359,7 @@ PanelWindow {
         Text {
             anchors.centerIn: list
             visible: RecentFiles.files.length === 0
-            text: "nada por aqui"
+            text: I18n.tr("nothingHere")
             color: Theme.foregroundDim
             font.family: Theme.fontFamily
             font.pixelSize: 11

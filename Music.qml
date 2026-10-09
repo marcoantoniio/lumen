@@ -43,7 +43,7 @@ Singleton {
     readonly property bool canPrev: player !== null && player.canGoPrevious
     readonly property bool canToggle: player !== null && player.canTogglePlaying
 
-    // ---------- posição (interpolada para a barra ficar suave) ----------
+    // ---------- posição (sincronizada com o player) ----------
     property real livePosition: 0
 
     readonly property real progress: length > 0 ? Math.max(0, Math.min(1, livePosition / length)) : 0
@@ -53,8 +53,15 @@ Singleton {
         repeat: true
         running: root.playing
         onTriggered: {
-            if (root.livePosition < root.length)
+            if (root.player && root.player.positionSupported) {
+                // Lê a posição real: o getter é sempre atual, mas o sinal só
+                // dispara se for forçado (doc do MprisPlayer). O handler
+                // sincroniza livePosition — corrige drift, seeks e o repeat
+                // (posição volta a 0 em vez de ficar presa no fim).
+                root.player.positionChanged();
+            } else if (root.livePosition < root.length) {
                 root.livePosition = Math.min(root.length, root.livePosition + 0.5);
+            }
         }
     }
 
@@ -302,8 +309,8 @@ Singleton {
             if (root.canPrev) root.player.previous();
         }
         function status(): string {
-            if (!root.active) return "nenhum player";
-            return root.artist + " - " + root.title + (root.playing ? " (tocando)" : " (pausado)");
+            if (!root.active) return I18n.tr("noPlayer");
+            return root.artist + " - " + root.title + (root.playing ? I18n.tr("stPlaying") : I18n.tr("stPaused"));
         }
         function getLyricsStatus(): string { return root.lyricsStatus; }
         function section(n: int): void { root.section = n; }

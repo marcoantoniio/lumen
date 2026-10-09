@@ -242,7 +242,7 @@ PanelWindow {
                 spacing: 8
 
                 Text {
-                    text: "Notificações"
+                    text: I18n.tr("notifications")
                     color: Theme.foreground
                     font.family: Theme.fontFamily
                     font.pixelSize: 14
@@ -261,7 +261,7 @@ PanelWindow {
 
                 Text {
                     visible: Notifications.count > 0
-                    text: "limpar tudo"
+                    text: I18n.tr("clearAll")
                     color: clearArea.containsMouse ? Theme.foreground : Theme.foregroundDim
                     font.family: Theme.fontFamily
                     font.pixelSize: 11
@@ -304,7 +304,7 @@ PanelWindow {
                     spacing: 6
 
                     FilterTab {
-                        label: "Todas"
+                        label: I18n.tr("all")
                         tabColor: Theme.accent
                         selected: Notifications.activeCategory === ""
                         onActivated: Notifications.activeCategory = ""
@@ -338,8 +338,8 @@ PanelWindow {
                 verticalAlignment: Text.AlignVCenter
                 visible: Notifications.filtered.length === 0
                 text: Notifications.activeCategory === ""
-                      ? "Nenhuma notificação"
-                      : "Nada em \"" + Notifications.activeCategory + "\""
+                      ? I18n.tr("noNotifications")
+                      : I18n.tr("nothingIn") + " \"" + Notifications.activeCategory + "\""
                 color: Theme.foregroundDim
                 font.family: Theme.fontFamily
                 font.pixelSize: 12
@@ -457,7 +457,7 @@ PanelWindow {
                 spacing: 8
 
                 Text {
-                    text: "System Tray"
+                    text: I18n.tr("systemTray")
                     color: Theme.foregroundDim
                     font.family: Theme.fontFamily
                     font.pixelSize: 10

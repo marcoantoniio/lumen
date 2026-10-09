@@ -34,10 +34,10 @@ Singleton {
 
     readonly property real pomoProgress: pomoTotal > 0 ? 1 - pomoRemaining / pomoTotal : 0
 
-    readonly property string pomoLabel: pomoPhase === 1 ? "Foco"
-        : pomoPhase === 2 ? "Pausa"
-        : pomoPhase === 3 ? "Pausa longa"
-        : "Pronto"
+    readonly property string pomoLabel: pomoPhase === 1 ? I18n.tr("focus")
+        : pomoPhase === 2 ? I18n.tr("break")
+        : pomoPhase === 3 ? I18n.tr("longBreak")
+        : I18n.tr("ready")
 
     // Ajusta a duração da fase atual (ocioso = foco)
     function pomoAdjust(delta) {
@@ -98,10 +98,10 @@ Singleton {
         if (root.pomoPhase === 1) {
             root.pomoCompleted += 1;
             root.pomoPhase = root.pomoCompleted % 4 === 0 ? 3 : 2;
-            message = root.pomoPhase === 3 ? "Pausa longa!" : "Pausa!";
+            message = root.pomoPhase === 3 ? I18n.tr("longBreakBang") : I18n.tr("breakBang");
         } else {
             root.pomoPhase = 1;
-            message = "Foco!";
+            message = I18n.tr("focusBang");
         }
 
         root.pomoRemaining = root.pomoTotal;
@@ -158,7 +158,7 @@ Singleton {
                 root.timerRemaining -= 1;
             if (root.timerRemaining <= 0) {
                 root.timerRunning = false;
-                root.showMessage("Tempo!");
+                root.showMessage(I18n.tr("timeUp"));
             }
         }
     }
@@ -226,10 +226,10 @@ Singleton {
         function reset(): void { root.pomoReset(); root.swReset(); root.timerReset(); }
         function status(): string {
             return "pomodoro: " + root.pomoLabel + " " + root.format(root.pomoRemaining)
-                 + (root.pomoRunning ? " (rodando)" : " (parado)")
+                 + (root.pomoRunning ? I18n.tr("stRunning") : I18n.tr("stStopped"))
                  + " | timer: " + root.format(root.timerRemaining)
-                 + (root.timerRunning ? " (rodando)" : " (parado)")
-                 + " | cronômetro: " + root.format(root.swElapsed);
+                 + (root.timerRunning ? I18n.tr("stRunning") : I18n.tr("stStopped"))
+                 + " | " + I18n.tr("stopwatch") + ": " + root.format(root.swElapsed);
         }
     }
 }

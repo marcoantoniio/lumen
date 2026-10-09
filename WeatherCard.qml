@@ -24,7 +24,7 @@ Rectangle {
             spacing: 6
 
             Text {
-                text: "Clima"
+                text: I18n.tr("weather")
                 color: Theme.foregroundDim
                 font.family: Theme.fontFamily
                 font.pixelSize: 11
@@ -50,7 +50,7 @@ Rectangle {
 
         Text {
             Layout.fillWidth: true
-            text: Weather.available ? Weather.desc : "carregando…"
+            text: Weather.available ? Weather.desc : I18n.tr("loading")
             color: Theme.foreground
             font.family: Theme.fontFamily
             font.pixelSize: 11
@@ -60,7 +60,7 @@ Rectangle {
         Text {
             Layout.fillWidth: true
             visible: Weather.available
-            text: "Máx " + Weather.high + "° · Mín " + Weather.low + "° · Chuva " + Weather.rainChance + "%"
+            text: I18n.tr("max") + Weather.high + "° · " + I18n.tr("min") + " " + Weather.low + "° · " + I18n.tr("rain") + " " + Weather.rainChance + "%"
             color: Theme.foregroundDim
             font.family: Theme.fontFamily
             font.pixelSize: 10
@@ -125,7 +125,7 @@ Rectangle {
                             Item { Layout.fillWidth: true }
 
                             Text {
-                                text: "Sens. " + modelData.feels + "°"
+                                text: I18n.tr("feels") + modelData.feels + "°"
                                 color: Theme.foregroundDim
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 8

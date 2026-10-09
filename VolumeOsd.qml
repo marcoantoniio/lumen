@@ -36,7 +36,7 @@ Row {
 
     Text {
         anchors.verticalCenter: parent.verticalCenter
-        text: Audio.osdMuted ? "Mudo" : Math.round(Audio.osdVolume * 100) + "%"
+        text: Audio.osdMuted ? I18n.tr("muted") : Math.round(Audio.osdVolume * 100) + "%"
         color: Theme.foreground
         font.family: Theme.fontFamily
         font.pixelSize: 13
