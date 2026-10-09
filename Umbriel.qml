@@ -69,7 +69,7 @@ Singleton {
             return;
         }
         if (message.err)
-            console.warn("[lumen] umbriel:", message.err);
+            console.warn("[skye] umbriel:", message.err);
     }
 
     Socket {

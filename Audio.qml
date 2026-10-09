@@ -7,7 +7,7 @@ pragma Singleton
 // exceto enquanto o Control Center está aberto (lá já tem o slider).
 //
 // IPC:
-//   qs -c lumen ipc call audio getVolume|setVolume|getMuted|toggleMute
+//   qs -c skye ipc call audio getVolume|setVolume|getMuted|toggleMute
 
 import Quickshell
 import Quickshell.Io

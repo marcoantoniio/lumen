@@ -4,7 +4,7 @@ pragma Singleton
 // cor dominante do álbum (para o brilho), letras (lrclib.net) e estado do painel.
 //
 // IPC:
-//   qs -c lumen ipc call music toggle|next|previous|status
+//   qs -c skye ipc call music toggle|next|previous|status
 
 import Quickshell
 import Quickshell.Io
@@ -175,7 +175,7 @@ Singleton {
                    + "&track_name=" + encodeURIComponent(root.title)
                    + (root.album !== "" ? "&album_name=" + encodeURIComponent(root.album) : "");
         lyricsProc.command = ["curl", "-s", "--max-time", "12",
-                              "-H", "User-Agent: lumen-shell",
+                              "-H", "User-Agent: skye-shell",
                               "https://lrclib.net/api/get?" + args];
         lyricsProc.running = true;
     }
@@ -186,7 +186,7 @@ Singleton {
         root._lyricsSearching = true;
         const q = encodeURIComponent(root.artist + " " + root.title);
         lyricsProc.command = ["curl", "-s", "--max-time", "12",
-                              "-H", "User-Agent: lumen-shell",
+                              "-H", "User-Agent: skye-shell",
                               "https://lrclib.net/api/search?q=" + q];
         lyricsProc.running = true;
     }

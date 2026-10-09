@@ -1,6 +1,6 @@
 //@ pragma UseQApplication
-// Lumen — shell Quickshell para CachyOS (Umbriel opcional)
-// Rode com: qs -c lumen
+// Skye — shell Quickshell para CachyOS (Umbriel opcional)
+// Rode com: qs -c skye
 //
 // Este arquivo é o ponto de entrada. Ele cria a barra no monitor principal
 // (Theme.barScreenName) e força a inicialização dos singletons de serviço.

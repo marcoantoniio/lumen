@@ -3,7 +3,7 @@ pragma Singleton
 // Estado do painel de teste da câmera (Webcam).
 //
 // IPC:
-//   qs -c lumen ipc call camera toggle|open|close
+//   qs -c skye ipc call camera toggle|open|close
 
 import Quickshell
 import Quickshell.Io

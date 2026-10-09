@@ -1,7 +1,7 @@
 pragma Singleton
 
 // Estado do Control Center (painel aberto pela bolinha do meio).
-// - Controlável por IPC: qs -c lumen ipc call controlcenter toggle|open|close|toggleCaffeine|getCaffeine|toggleNightLight|getNightLight
+// - Controlável por IPC: qs -c skye ipc call controlcenter toggle|open|close|toggleCaffeine|getCaffeine|toggleNightLight|getNightLight
 
 import Quickshell
 import Quickshell.Io

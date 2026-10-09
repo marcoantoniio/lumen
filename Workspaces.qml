@@ -5,7 +5,7 @@ pragma Singleton
 // - Umbriel: espelha o serviço Umbriel.qml (socket IPC) como fallback.
 //
 // Itens: [{ id, name, active, occupied, raw }]
-// IPC: qs -c lumen ipc call workspaces refresh|switchToIndex <n>
+// IPC: qs -c skye ipc call workspaces refresh|switchToIndex <n>
 
 import Quickshell
 import Quickshell.Io

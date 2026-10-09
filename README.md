@@ -1,4 +1,4 @@
-# Lumen
+# Skye
 
 **A desktop shell for Wayland, built with [Quickshell](https://quickshell.org/) (QML).**
 
@@ -60,7 +60,7 @@ but it works on any compositor with `wlr-layer-shell` — KWin, Hyprland, niri, 
   and uptime — all with little bars.
 - **Clipboard & Notes**: clipboard history (left click copies back, right click
   removes) and notes (multiple, with title, saved to
-  `~/.local/share/lumen/notes.json`).
+  `~/.local/share/skye/notes.json`).
 - **Footer** with shortcuts: Terminal, Files, Browser, Clipboard, Settings and
   the **language toggle (pt-BR/EN)**.
 
@@ -107,16 +107,16 @@ but it works on any compositor with `wlr-layer-shell` — KWin, Hyprland, niri, 
 ## 🚀 Installation
 
 ```bash
-git clone https://github.com/marcoantoniio/lumen ~/.config/quickshell/lumen
-qs -c lumen -n -d        # starts in the background
+git clone https://github.com/marcoantoniio/skye ~/.config/quickshell/skye
+qs -c skye -n -d        # starts in the background
 ```
 
 Stop / inspect:
 
 ```bash
-qs -c lumen kill         # quits
-qs -c lumen list         # shows running instances
-qs -c lumen log          # prints the logs
+qs -c skye kill         # quits
+qs -c skye list         # shows running instances
+qs -c skye log          # prints the logs
 ```
 
 ### Start with the session (optional)
@@ -125,22 +125,22 @@ Via user systemd:
 
 ```bash
 mkdir -p ~/.config/systemd/user
-cat > ~/.config/systemd/user/lumen.service <<'EOF'
+cat > ~/.config/systemd/user/skye.service <<'EOF'
 [Unit]
-Description=Lumen (Quickshell shell)
+Description=Skye (Quickshell shell)
 After=graphical-session.target
 PartOf=graphical-session.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/qs -c lumen -n
+ExecStart=/usr/bin/qs -c skye -n
 Restart=on-failure
 RestartSec=2s
 
 [Install]
 WantedBy=graphical-session.target
 EOF
-systemctl --user enable --now lumen.service
+systemctl --user enable --now skye.service
 ```
 
 Or copy a `.desktop` file into `~/.config/autostart/` (and into
@@ -149,8 +149,8 @@ Or copy a `.desktop` file into `~/.config/autostart/` (and into
 ```ini
 [Desktop Entry]
 Type=Application
-Name=Lumen Shell
-Exec=qs -c lumen -n -d
+Name=Skye Shell
+Exec=qs -c skye -n -d
 Icon=video-display
 Terminal=false
 Categories=Utility;
@@ -171,28 +171,28 @@ Categories=Utility;
 ## ⌨️ IPC
 
 ```bash
-qs -c lumen ipc show                          # lists everything available
+qs -c skye ipc show                          # lists everything available
 
-qs -c lumen ipc call notifications toggle     # notifications panel
-qs -c lumen ipc call notifications toggleDnd  # do not disturb
-qs -c lumen ipc call controlcenter toggle     # control center
-qs -c lumen ipc call controlcenter setTab 1   # 0=CC, 1=Dashboard, 2=Clipboard
-qs -c lumen ipc call controlcenter toggleMixer  # app mixer (instead of Levels)
-qs -c lumen ipc call workspaces switchToIndex 1
-qs -c lumen ipc call brightness set 40        # brightness (DDC/CI)
-qs -c lumen ipc call weather refresh
-qs -c lumen ipc call clipboard copy "text"
-qs -c lumen ipc call recorder start           # records all screens (~/Videos)
-qs -c lumen ipc call recorder pause           # pauses/resumes recording
-qs -c lumen ipc call recorder stop            # stops and saves the file
-qs -c lumen ipc call music status             # current music (MPRIS)
-qs -c lumen ipc call music toggle             # play/pause
-qs -c lumen ipc call audio setVolume 0.5      # output volume (shows the OSD)
-qs -c lumen ipc call timer pomodoro           # pomodoro/stopwatch (no UI yet)
-qs -c lumen ipc call timer status             # pomodoro/stopwatch state
-qs -c lumen ipc call camera toggle            # camera preview
-qs -c lumen ipc call recent toggle            # recent files panel (hub)
-qs -c lumen ipc call language toggle          # language: pt-BR/EN
+qs -c skye ipc call notifications toggle     # notifications panel
+qs -c skye ipc call notifications toggleDnd  # do not disturb
+qs -c skye ipc call controlcenter toggle     # control center
+qs -c skye ipc call controlcenter setTab 1   # 0=CC, 1=Dashboard, 2=Clipboard
+qs -c skye ipc call controlcenter toggleMixer  # app mixer (instead of Levels)
+qs -c skye ipc call workspaces switchToIndex 1
+qs -c skye ipc call brightness set 40        # brightness (DDC/CI)
+qs -c skye ipc call weather refresh
+qs -c skye ipc call clipboard copy "text"
+qs -c skye ipc call recorder start           # records all screens (~/Videos)
+qs -c skye ipc call recorder pause           # pauses/resumes recording
+qs -c skye ipc call recorder stop            # stops and saves the file
+qs -c skye ipc call music status             # current music (MPRIS)
+qs -c skye ipc call music toggle             # play/pause
+qs -c skye ipc call audio setVolume 0.5      # output volume (shows the OSD)
+qs -c skye ipc call timer pomodoro           # pomodoro/stopwatch (no UI yet)
+qs -c skye ipc call timer status             # pomodoro/stopwatch state
+qs -c skye ipc call camera toggle            # camera preview
+qs -c skye ipc call recent toggle            # recent files panel (hub)
+qs -c skye ipc call language toggle          # language: pt-BR/EN
 ```
 
 ---
@@ -233,7 +233,7 @@ Colors use Qt's `#AARRGGBB` format (the `AA` is the transparency).
 | `ControlCenter.qml`, `ControlCenterPanel.qml`, `PanelTab.qml`, `QuickToggle.qml`, `LevelRow.qml`, `LevelSlider.qml`, `DeviceMenu.qml`, `FooterIcon.qml` | Control Center |
 | `CalendarCard.qml`, `WeatherCard.qml`, `SystemCard.qml`, `Weather.qml`, `Greeting.qml` | Dashboard |
 | `Clipboard.qml` | clipboard history |
-| `Notes.qml` | notes (persisted in `~/.local/share/lumen`) |
+| `Notes.qml` | notes (persisted in `~/.local/share/skye`) |
 | `Brightness.qml` | DDC/CI brightness |
 | `Workspaces.qml`, `Umbriel.qml` | desktops (KWin + Umbriel) |
 | `Notifications.qml`, `NotificationCenter.qml`, `NotificationPopup.qml`, `NotificationPopups.qml`, `FilterTab.qml` | notifications |

@@ -5,7 +5,7 @@ pragma Singleton
 // - Lê o brilho (VCP 10) e permite ajustar (com debounce, pois setvcp é lento).
 // - Em monitores sem DDC/CI, `available` fica false.
 //
-// IPC: qs -c lumen ipc call brightness get|set <0-100>|refresh
+// IPC: qs -c skye ipc call brightness get|set <0-100>|refresh
 
 import Quickshell
 import Quickshell.Io

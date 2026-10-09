@@ -1,7 +1,7 @@
 pragma Singleton
 
 // Notas do Control Center: várias notas com título e corpo, persistidas em
-// ~/.local/share/lumen/notes.json (fica salvo no computador entre reinícios).
+// ~/.local/share/skye/notes.json (fica salvo no computador entre reinícios).
 
 import Quickshell
 import Quickshell.Io
@@ -15,7 +15,7 @@ Singleton {
     // incrementa quando as notas terminam de carregar do disco
     property int loadSeq: 0
 
-    readonly property string notesDir: Quickshell.env("HOME") + "/.local/share/lumen"
+    readonly property string notesDir: Quickshell.env("HOME") + "/.local/share/skye"
     readonly property string notesFile: notesDir + "/notes.json"
 
     function addNote() {

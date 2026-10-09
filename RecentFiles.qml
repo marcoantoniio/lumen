@@ -3,7 +3,7 @@ pragma Singleton
 // Estado do painel "Recentes" (hub do botão ciano da ilha).
 //
 // IPC:
-//   qs -c lumen ipc call recent toggle|open|close|refresh
+//   qs -c skye ipc call recent toggle|open|close|refresh
 
 import Quickshell
 import Quickshell.Io

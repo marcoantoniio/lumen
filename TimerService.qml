@@ -5,7 +5,7 @@ pragma Singleton
 // toca um som e mostra um aviso na ilha.
 //
 // IPC:
-//   qs -c lumen ipc call timer pomodoro|stopwatch|countdown|setMinutes|reset|status
+//   qs -c skye ipc call timer pomodoro|stopwatch|countdown|setMinutes|reset|status
 
 import Quickshell
 import Quickshell.Io

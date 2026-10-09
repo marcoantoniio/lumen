@@ -7,7 +7,7 @@ pragma Singleton
 //   (comandos nativos via socket IPC do gpu-screen-recorder).
 // - Enquanto grava, a ilha mostra o indicador REC (RecordingIndicator).
 // - Controle por IPC:
-//   qs -c lumen ipc call recorder toggle|start|stop|pause|resume|isRecording|isPaused|getTime|getFile
+//   qs -c skye ipc call recorder toggle|start|stop|pause|resume|isRecording|isPaused|getTime|getFile
 
 import Quickshell
 import Quickshell.Io
@@ -23,7 +23,7 @@ Singleton {
 
     readonly property string bin: "gpu-screen-recorder"
     readonly property string videosDir: Quickshell.env("HOME") + "/Videos"
-    readonly property string socketPath: Quickshell.env("XDG_RUNTIME_DIR") + "/lumen-recorder.sock"
+    readonly property string socketPath: Quickshell.env("XDG_RUNTIME_DIR") + "/skye-recorder.sock"
 
     property int _nextId: 1
 
@@ -136,9 +136,9 @@ Singleton {
                 try {
                     const reply = JSON.parse(line);
                     if (reply.result && reply.result !== "ok")
-                        console.warn("[lumen] gravador:", reply.result);
+                        console.warn("[skye] gravador:", reply.result);
                 } catch (e) {
-                    console.warn("[lumen] gravador: resposta inválida:", line);
+                    console.warn("[skye] gravador: resposta inválida:", line);
                 }
             }
         }

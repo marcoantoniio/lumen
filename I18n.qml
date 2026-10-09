@@ -1,7 +1,7 @@
 pragma Singleton
 
 // Idioma da interface: "pt" (padrão) ou "en". Persiste entre reinícios.
-// IPC: qs -c lumen ipc call language set en | toggle | get
+// IPC: qs -c skye ipc call language set en | toggle | get
 //
 // Uso: text: I18n.tr("key")            — textos simples
 //      text: I18n.tr("key", [arg])     — "{0}" é substituído pelo arg
