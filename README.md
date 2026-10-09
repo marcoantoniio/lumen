@@ -1,9 +1,9 @@
 # Lumen
 
-**Um shell desktop para Wayland, feito com [Quickshell](https://quickshell.org/) (QML).**
+**A desktop shell for Wayland, built with [Quickshell](https://quickshell.org/) (QML).**
 
-Feito para viver bem com o compositor [Umbriel](https://github.com/noctalia-dev/umbriel),
-mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, niri, Sway…
+Made to live well with the [Umbriel](https://github.com/noctalia-dev/umbriel) compositor,
+but it works on any compositor with `wlr-layer-shell` — KWin, Hyprland, niri, Sway…
 
 ![Wayland](https://img.shields.io/badge/Wayland-000000?style=flat-square&logo=wayland&logoColor=white)
 ![Quickshell](https://img.shields.io/badge/Quickshell-0.3.1-f4be9e?style=flat-square)
@@ -14,112 +14,114 @@ mas funciona em qualquer compositor com `wlr-layer-shell` — KWin, Hyprland, ni
 
 ## ✨ Features
 
-### Ilha dinâmica
+### Dynamic island
 
-- **Barra flutuante em pílula**, uma por monitor, com clique atravessando fora
-  da pílula (`mask`/`Region`).
-- **Idle mostra só o relógio**; ao passar o mouse, a pílula **expande com
-  animação** (largura + slide + fade) e revela os elementos laterais.
-- **Gravando**: a ilha vira o indicador **REC** — bolinha vermelha pulsando,
-  tempo de gravação e botões de pausar/continuar e parar.
-- **Volume**: ao mudar o volume/mudo (teclas de mídia, apps), a ilha mostra um
-  **OSD** com barra e porcentagem (some sozinho).
-- **Música**: quando há música tocando, a ilha mostra a **capa** + barrinhas
-  animadas + título.
-- **A ilha se adapta aos painéis**: quando um painel abre, ela cresce até a
-  largura dele e se funde ao painel (sem vão nem linha divisória); ao fechar,
-  volta ao normal — tudo animado.
-- **Esquerda (hover)**: dots dos desktops/workspaces — **KWin via D-Bus** ou
-  Umbriel (fallback automático). O desktop atual fica maior e aceso; clique
-  troca de desktop. Ao lado, o sino com dot quando há notificações.
-- **Direita (hover)**: três botões circulares **só com cores**; o selecionado
-  ganha um brilho suave em gradiente radial:
-  - **Laranja** — notificações (abre/fecha o painel)
-  - **Magenta** — Control Center (abre/fecha)
-  - **Ciano** — Recentes (abre/fecha o painel de arquivos recentes — hub)
+- **Floating pill-shaped bar**, one per monitor, with clicks passing through
+  outside the pill (`mask`/`Region`).
+- **Idle shows only the clock**; on hover, the pill **expands with an
+  animation** (width + slide + fade) and reveals the side elements.
+- **Recording**: the island becomes the **REC** indicator — pulsing red dot,
+  recording time and pause/resume and stop buttons.
+- **Volume**: when the volume/mute changes (media keys, apps), the island shows
+  an **OSD** with a bar and percentage (it hides by itself).
+- **Music**: while music is playing, the island shows the **album art** +
+  animated equalizer bars + title.
+- **The island adapts to the panels**: when a panel opens, it grows to the
+  panel width and merges into it (no gap or divider line); when it closes, it
+  goes back to normal — all animated.
+- **Left (hover)**: desktop/workspace dots — **KWin via D-Bus** or
+  Umbriel (automatic fallback). The current desktop gets bigger and lit; click
+  switches desktop. Next to them, the bell with a dot when there are
+  notifications.
+- **Right (hover)**: three circular buttons **with colors only**; the selected
+  one gets a soft radial-gradient glow:
+  - **Orange** — notifications (opens/closes the panel)
+  - **Magenta** — Control Center (opens/closes)
+  - **Cyan** — Recent (opens/closes the recent files panel — hub)
 
 ### Control Center
 
-- Abas: **Control Center | Dashboard | Clipboard & Notes** (altura fixa, sem
-  "pular" ao trocar de aba).
-- **Control Center**: Quick Settings (Rede, Não Perturbe, Night Light,
-  Caffeine, Bluetooth, **Gravador** — grava a tela e acende durante a gravação,
-  **Câmera** — preview da webcam) + Sessão (Bloquear, Sair, Reiniciar,
-  Desligar); **Levels** com sliders de Saída/Microfone/Brilho, mute no ícone e
-  **seletor de dispositivos de áudio** na setinha; **mixer de aplicativos**
-  (o botão troca os Levels pela lista dos apps tocando som, com slider e mute
-  por app); linha de mídia (MPRIS).
-- **Música**: passando o mouse na ilha (com música tocando) abre um painel com
-  capa e **brilho da cor do álbum**, controles (anterior/play/próxima), seek,
-  **saída de áudio**, **mixer por aplicativo** e **letras** (lrclib, com
-  sincronia e linha atual destacada).
-- **Dashboard**: saudação ("Bom dia/Boa tarde/Boa noite, Nome"), **calendário**
-  com semana atual + mini-mês, **clima** com previsão horária (umidade, vento,
-  chuva) e **Sistema** com CPU, RAM, GPU, temperatura, disco e uptime — tudo
-  com barrinhas.
-- **Clipboard & Notes**: histórico do clipboard (clique esquerdo copia de
-  volta, direito remove) e notas (várias, com título, salvas em
+- Tabs: **Control Center | Dashboard | Clipboard & Notes** (fixed height, no
+  "jumping" when switching tabs).
+- **Control Center**: Quick Settings (Network, Do Not Disturb, Night Light,
+  Caffeine, Bluetooth, **Recorder** — records the screen and lights up while
+  recording, **Camera** — webcam preview) + Session (Lock, Log out, Restart,
+  Shut down); **Levels** with Output/Microphone/Brightness sliders, mute on the
+  icon and an **audio device picker** on the arrow; **app mixer** (the button
+  swaps the Levels for the list of apps playing sound, with per-app slider and
+  mute); media line (MPRIS).
+- **Music**: hovering the island (with music playing) opens a panel with
+  album art and **album-color glow**, controls (previous/play/next), seek,
+  **audio output**, **per-app mixer** and **lyrics** (lrclib, with sync and the
+  current line highlighted).
+- **Dashboard**: greeting ("Good morning/afternoon/evening, Name"), **calendar**
+  with the current week + mini-month, **weather** with hourly forecast
+  (humidity, wind, rain) and **System** with CPU, RAM, GPU, temperature, disk
+  and uptime — all with little bars.
+- **Clipboard & Notes**: clipboard history (left click copies back, right click
+  removes) and notes (multiple, with title, saved to
   `~/.local/share/lumen/notes.json`).
-- **Rodapé** com atalhos: Terminal, Arquivos, Navegador, Clipboard e
-  Configurações.
+- **Footer** with shortcuts: Terminal, Files, Browser, Clipboard, Settings and
+  the **language toggle (pt-BR/EN)**.
 
-### Notificações e serviços
+### Notifications and services
 
-- **Painel de notificações** com abas coloridas por categoria (filtram a
-  lista), "limpar tudo", botões de ação e **bandeja do sistema** no rodapé.
-- **Toasts** empilhados no canto superior direito (até 4, somem sozinhos).
-- **Tema central** em `Theme.qml`: fundo preto, texto branco quente
-  (`#efeceb`), destaque pêssego (`#f4be9e`).
-- **IPC próprio** para controlar tudo por linha de comando.
-
----
-
-## 📦 Requisitos
-
-**Obrigatórios**
-
-| Pacote | Para quê |
-|---|---|
-| `quickshell` (≥ 0.3.1) | o shell em si |
-| Fonte Nerd Font (`ttf-jetbrains-mono-nerd` ou similar) | ícones da UI |
-| `curl` | clima (wttr.in) |
-
-**Opcionais** (cada um habilita uma feature; sem ele, a UI degrada sozinha)
-
-| Pacote | Para quê |
-|---|---|
-| `umbriel` | workspaces via IPC do compositor (senão usa KWin) |
-| `pipewire` / `wireplumber` | sliders de volume e microfone |
-| `ddcutil` | brilho de monitor externo (DDC/CI) |
-| `nvidia-smi` / `lm_sensors` | GPU e temperatura no Dashboard |
-| `kitty` | botão do terminal no rodapé |
-| `wl-clipboard` | histórico do clipboard (wl-paste/wl-copy) |
-| `gammastep` | botão Night Light |
-| `network-manager-applet` | ícone de rede na bandeja (`nm-applet --indicator`, iniciar junto com a sessão) |
-| `qt6-multimedia` | preview da câmera (botão Câmera) |
-| `curl` | letras (lrclib) e capa da música |
-| `gpu-screen-recorder` | gravação de todas as telas (botão Gravador; usa NVENC/GPU e áudio do sistema + microfone) |
+- **Notification panel** with color-coded category tabs (they filter the
+  list), "clear all", action buttons and the **system tray** in the footer.
+- **Toasts** stacked in the top-right corner (up to 4, they hide by
+  themselves).
+- **Central theme** in `Theme.qml`: black background, warm white text
+  (`#efeceb`), peach accent (`#f4be9e`).
+- **Custom IPC** to control everything from the command line.
 
 ---
 
-## 🚀 Instalação
+## 📦 Requirements
+
+**Required**
+
+| Package | For what |
+|---|---|
+| `quickshell` (≥ 0.3.1) | the shell itself |
+| Nerd Font (`ttf-jetbrains-mono-nerd` or similar) | UI icons |
+| `curl` | weather (wttr.in) |
+
+**Optional** (each one enables a feature; without it the UI degrades on its own)
+
+| Package | For what |
+|---|---|
+| `umbriel` | workspaces via the compositor IPC (otherwise uses KWin) |
+| `pipewire` / `wireplumber` | volume and microphone sliders |
+| `ddcutil` | external monitor brightness (DDC/CI) |
+| `nvidia-smi` / `lm_sensors` | GPU and temperature on the Dashboard |
+| `kitty` | terminal button in the footer |
+| `wl-clipboard` | clipboard history (wl-paste/wl-copy) |
+| `gammastep` | Night Light button |
+| `network-manager-applet` | network icon in the tray (`nm-applet --indicator`, start it with the session) |
+| `qt6-multimedia` | camera preview (Camera button) |
+| `curl` | lyrics (lrclib) and album art |
+| `gpu-screen-recorder` | all-screens recording (Recorder button; uses NVENC/GPU and system audio + microphone) |
+
+---
+
+## 🚀 Installation
 
 ```bash
 git clone https://github.com/marcoantoniio/lumen ~/.config/quickshell/lumen
-qs -c lumen -n -d        # inicia em segundo plano
+qs -c lumen -n -d        # starts in the background
 ```
 
-Parar / inspecionar:
+Stop / inspect:
 
 ```bash
-qs -c lumen kill         # encerra
-qs -c lumen list         # mostra instâncias rodando
-qs -c lumen log          # imprime os logs
+qs -c lumen kill         # quits
+qs -c lumen list         # shows running instances
+qs -c lumen log          # prints the logs
 ```
 
-### Iniciar junto com a sessão (opcional)
+### Start with the session (optional)
 
-Via systemd de usuário:
+Via user systemd:
 
 ```bash
 mkdir -p ~/.config/systemd/user
@@ -141,8 +143,8 @@ EOF
 systemctl --user enable --now lumen.service
 ```
 
-Ou copie um `.desktop` para `~/.config/autostart/` (e para
-`~/.local/share/applications/` se quiser abrir pelo menu):
+Or copy a `.desktop` file into `~/.config/autostart/` (and into
+`~/.local/share/applications/` if you want to launch it from the menu):
 
 ```ini
 [Desktop Entry]
@@ -156,111 +158,114 @@ Categories=Utility;
 
 ---
 
-## 🎮 Como usar
+## 🎮 How to use
 
-- **Repouso**: só o relógio. **Hover**: a ilha expande e revela os controles.
-- **Dots à esquerda**: clique para trocar de desktop/workspace.
-- **Botões à direita**: notificações, Control Center e Não Perturbe.
-- **No painel**: use as abas no topo; o rodapé tem os atalhos de apps.
+- **Idle**: only the clock. **Hover**: the island expands and reveals the
+  controls.
+- **Dots on the left**: click to switch desktop/workspace.
+- **Buttons on the right**: notifications, Control Center and Recent.
+- **In the panel**: use the tabs at the top; the footer has the app shortcuts.
 
 ---
 
 ## ⌨️ IPC
 
 ```bash
-qs -c lumen ipc show                          # lista tudo que existe
+qs -c lumen ipc show                          # lists everything available
 
-qs -c lumen ipc call notifications toggle     # painel de notificações
-qs -c lumen ipc call notifications toggleDnd  # não perturbe
+qs -c lumen ipc call notifications toggle     # notifications panel
+qs -c lumen ipc call notifications toggleDnd  # do not disturb
 qs -c lumen ipc call controlcenter toggle     # control center
 qs -c lumen ipc call controlcenter setTab 1   # 0=CC, 1=Dashboard, 2=Clipboard
-qs -c lumen ipc call controlcenter toggleMixer  # mixer de aplicativos (no lugar dos Levels)
+qs -c lumen ipc call controlcenter toggleMixer  # app mixer (instead of Levels)
 qs -c lumen ipc call workspaces switchToIndex 1
-qs -c lumen ipc call brightness set 40        # brilho (DDC/CI)
+qs -c lumen ipc call brightness set 40        # brightness (DDC/CI)
 qs -c lumen ipc call weather refresh
-qs -c lumen ipc call clipboard copy "texto"
-qs -c lumen ipc call recorder start           # grava todas as telas (~/Videos)
-qs -c lumen ipc call recorder pause           # pausa/retoma a gravação
-qs -c lumen ipc call recorder stop            # para e salva o arquivo
-qs -c lumen ipc call music status             # música atual (MPRIS)
+qs -c lumen ipc call clipboard copy "text"
+qs -c lumen ipc call recorder start           # records all screens (~/Videos)
+qs -c lumen ipc call recorder pause           # pauses/resumes recording
+qs -c lumen ipc call recorder stop            # stops and saves the file
+qs -c lumen ipc call music status             # current music (MPRIS)
 qs -c lumen ipc call music toggle             # play/pause
-qs -c lumen ipc call audio setVolume 0.5      # volume da saída (mostra o OSD)
-qs -c lumen ipc call timer pomodoro           # pomodoro/cronômetro (sem UI por enquanto)
-qs -c lumen ipc call timer status             # estado do pomodoro/cronômetro
-qs -c lumen ipc call camera toggle            # preview da câmera
-qs -c lumen ipc call recent toggle            # painel de arquivos recentes (hub)
+qs -c lumen ipc call audio setVolume 0.5      # output volume (shows the OSD)
+qs -c lumen ipc call timer pomodoro           # pomodoro/stopwatch (no UI yet)
+qs -c lumen ipc call timer status             # pomodoro/stopwatch state
+qs -c lumen ipc call camera toggle            # camera preview
+qs -c lumen ipc call recent toggle            # recent files panel (hub)
+qs -c lumen ipc call language toggle          # language: pt-BR/EN
 ```
 
 ---
 
-## 🎨 Personalização
+## 🎨 Customization
 
 > [!WARNING]
-> O botão do globo no rodapé do Control Center abre **`https://localhost`** —
-> a instância **SearXNG local do autor** do repositório. Se na sua máquina não
-> há um SearXNG aí (ou ele roda em outro host/porta), troque a URL no
-> `ControlCenterPanel.qml` (rodapé, ícone do globo) ou aponte para o buscador
-> que você preferir.
+> The globe button in the Control Center footer opens **`https://localhost`** —
+> the repository author's **local SearXNG** instance. If your machine doesn't
+> run SearXNG there (or it runs on another host/port), change the URL in
+> `ControlCenterPanel.qml` (footer, globe icon) or point it to the search
+> engine of your choice.
 
-| Quero mudar… | Arquivo |
+| I want to change… | File |
 |---|---|
-| Cores, fontes e métricas | `Theme.qml` |
-| Cidade do clima (coordenadas) | `Weather.qml` → `location` |
-| Nomes amigáveis dos discos | `ControlCenterPanel.qml` → `diskName()` |
-| Comando do botão terminal | `ControlCenterPanel.qml` (rodapé) |
-| URL do botão navegador (SearXNG local) | `ControlCenterPanel.qml` (rodapé) |
-| Tamanho do painel | `Theme.qml` → `controlCenterPanelWidth` |
-| Tela do painel da câmera | `Theme.qml` → `cameraScreenName` |
-| Monitor da ilha dinâmica | `Theme.qml` → `barScreenName` |
+| Colors, fonts and metrics | `Theme.qml` |
+| Weather city (coordinates) | `Weather.qml` → `location` |
+| Friendly disk names | `ControlCenterPanel.qml` → `diskName()` |
+| Terminal button command | `ControlCenterPanel.qml` (footer) |
+| Browser button URL (local SearXNG) | `ControlCenterPanel.qml` (footer) |
+| Panel size | `Theme.qml` → `controlCenterPanelWidth` |
+| Camera panel screen | `Theme.qml` → `cameraScreenName` |
+| Dynamic island monitor | `Theme.qml` → `barScreenName` |
 
-As cores seguem o formato `#AARRGGBB` do Qt (o `AA` é a transparência).
+Colors use Qt's `#AARRGGBB` format (the `AA` is the transparency).
 
 ---
 
-## 📁 Estrutura
+## 📁 Structure
 
-| Arquivo | Papel |
+| File | Role |
 |---|---|
-| `shell.qml` | entrada; cria uma barra por monitor |
-| `Theme.qml` | tema (cores, fontes, métricas) e larguras dos painéis |
-| `Bar.qml` | a ilha dinâmica (colapsa/expande no hover) |
-| `Clock.qml`, `Bell.qml`, `WorkspacePills.qml`, `CategoryButtons.qml`, `CategoryCircle.qml` | widgets da ilha |
+| `shell.qml` | entry point; creates one bar per monitor |
+| `Theme.qml` | theme (colors, fonts, metrics) and panel widths |
+| `I18n.qml` | translations (pt-BR/EN) and language IPC |
+| `Bar.qml` | the dynamic island (collapses/expands on hover) |
+| `Clock.qml`, `Bell.qml`, `WorkspacePills.qml`, `CategoryButtons.qml`, `CategoryCircle.qml` | island widgets |
 | `ControlCenter.qml`, `ControlCenterPanel.qml`, `PanelTab.qml`, `QuickToggle.qml`, `LevelRow.qml`, `LevelSlider.qml`, `DeviceMenu.qml`, `FooterIcon.qml` | Control Center |
 | `CalendarCard.qml`, `WeatherCard.qml`, `SystemCard.qml`, `Weather.qml`, `Greeting.qml` | Dashboard |
-| `Clipboard.qml` | histórico do clipboard |
-| `Notes.qml` | notas (persistidas em `~/.local/share/lumen`) |
-| `Brightness.qml` | brilho DDC/CI |
+| `Clipboard.qml` | clipboard history |
+| `Notes.qml` | notes (persisted in `~/.local/share/lumen`) |
+| `Brightness.qml` | DDC/CI brightness |
 | `Workspaces.qml`, `Umbriel.qml` | desktops (KWin + Umbriel) |
-| `Notifications.qml`, `NotificationCenter.qml`, `NotificationPopup.qml`, `NotificationPopups.qml`, `FilterTab.qml` | notificações |
-| `Tray.qml` | bandeja do sistema |
-| `RecentFiles.qml`, `RecentFilesPanel.qml` | painel de arquivos recentes (hub do botão ciano) |
+| `Notifications.qml`, `NotificationCenter.qml`, `NotificationPopup.qml`, `NotificationPopups.qml`, `FilterTab.qml` | notifications |
+| `Tray.qml` | system tray |
+| `RecentFiles.qml`, `RecentFilesPanel.qml` | recent files panel (cyan button hub) |
 
 ---
 
-## 📝 Notas e limitações
+## 📝 Notes and limitations
 
-- O painel do Control Center tem **altura fixa** para não reposicionar ao trocar
-  de aba.
-- **Notificações**: o shell precisa ser o dono de
-  `org.freedesktop.Notifications`. Sob KDE com plasmashell rodando, o painel
-  nativo ganha — sob Umbriel (ou sem plasmashell) funciona normalmente.
-- **Workspaces**: usa KWin via D-Bus; sob Umbriel cai automaticamente para o
-  IPC do compositor.
-- **Clipboard**: o histórico usa o `wl-clipboard` (`wl-paste --watch` + `wl-copy`);
-  sem ele instalado, a aba mostra "indisponível".
-- **Brilho**: depende do monitor suportar DDC/CI.
-- O menu de dispositivos de áudio não fecha ao clicar fora (limitação de popups
-  aninhados no Wayland); feche clicando na setinha ou escolhendo um item.
+- The Control Center panel has a **fixed height** so it doesn't reposition when
+  switching tabs.
+- **Notifications**: the shell needs to own
+  `org.freedesktop.Notifications`. Under KDE with plasmashell running, the
+  native panel wins — under Umbriel (or without plasmashell) it works normally.
+- **Workspaces**: uses KWin via D-Bus; under Umbriel it automatically falls back
+  to the compositor IPC.
+- **Clipboard**: the history uses `wl-clipboard` (`wl-paste --watch` +
+  `wl-copy`); without it installed, the tab shows "unavailable".
+- **Brightness**: depends on the monitor supporting DDC/CI.
+- The audio device menu doesn't close when clicking outside (a limitation of
+  nested popups on Wayland); close it by clicking the arrow or picking an item.
 
 ---
 
-## 📚 Documentação
+## 📚 Documentation
 
 - Quickshell: <https://quickshell.org/docs/>
 - Umbriel (compositor): <https://docs.noctalia.dev/umbriel/>
 
 ---
 
-## 📄 Licença
+## 📄 License
 
-MIT — veja [`LICENSE`](LICENSE).
+MIT — see [`LICENSE`](LICENSE).
